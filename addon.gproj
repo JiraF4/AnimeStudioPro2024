@@ -1,0 +1,8 @@
+GameProject {
+ ID "AnimeStudioPro2024"
+ GUID "6270BCF4CD6836E8"
+ TITLE "AnimeStudioPro2024"
+ Dependencies {
+  "58D0FB3206B6F859"
+ }
+}
