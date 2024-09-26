@@ -14,7 +14,8 @@ class PS_AnimeContainer
 enum PS_EAnimeContainer_CustomData
 {
 	NULL,
-	Character
+	Character,
+	Vehicle
 }
 
 class PS_AnimeContainer_CustomData
@@ -33,8 +34,7 @@ class PS_AnimeContainer_CustomData
 		return false;
 	void WriteToFile(FileHandle fileHandle)
 		fileHandle.Write(m_iDataType, 1);
-	void ReadFromFile(FileHandle fileHandle)
-		fileHandle.Read(m_iDataType, 1);
+	void ReadFromFile(FileHandle fileHandle);
 }
 
 class PS_AnimeContainer_Character : PS_AnimeContainer_CustomData
@@ -161,6 +161,147 @@ class PS_AnimeContainer_Character : PS_AnimeContainer_CustomData
 	
 	int m_iLeftPropHidden;
 	int m_iRightPropHidden;
+}
+
+class PS_AnimeContainer_Vehicle : PS_AnimeContainer_CustomData
+{
+	void PS_AnimeContainer_Vehicle(PS_AnimeContainer animeContainer)
+	{
+		m_iDataType = PS_EAnimeContainer_CustomData.Vehicle;
+	}
+	
+	private CarControllerComponent m_Vehicle_c;
+	private VehicleWheeledSimulation m_Vehicle_s;
+	private BaseLightManagerComponent m_Vehicle_l;
+	override void ReadData(IEntity entity)
+	{
+		if (!m_Vehicle_c)
+		{
+			m_Vehicle_c = CarControllerComponent.Cast(entity.FindComponent(CarControllerComponent));
+			m_Vehicle_l = BaseLightManagerComponent.Cast(entity.FindComponent(BaseLightManagerComponent));
+			m_Vehicle_s = VehicleWheeledSimulation.Cast(entity.FindComponent(VehicleWheeledSimulation));
+		}
+		
+		m_bStartEngine = m_Vehicle_c.IsEngineOn();
+		m_bHandBrake = m_Vehicle_c.GetHandBrake();
+		m_bLightsOn = m_Vehicle_l.GetLightsEnabled();
+		m_iGear = m_Vehicle_c.GetCurrentGear();
+		m_fEfficiency = m_Vehicle_s.GearboxGetEfficiencyState();
+		m_fClutch = m_Vehicle_s.GetClutch();
+		m_fThrottle = m_Vehicle_s.GetThrottle();
+		m_fBreak = m_Vehicle_s.GetBrake();
+	}
+	
+	override void Apply(IEntity entity)
+	{
+		if (!m_Vehicle_c)
+		{
+			m_Vehicle_c = CarControllerComponent.Cast(entity.FindComponent(CarControllerComponent));
+			m_Vehicle_l = BaseLightManagerComponent.Cast(entity.FindComponent(BaseLightManagerComponent));
+			m_Vehicle_s = VehicleWheeledSimulation.Cast(entity.FindComponent(VehicleWheeledSimulation));
+		}
+		
+		if (m_Vehicle_c && m_Vehicle_s)
+		{
+			//zeroes sentsitivities
+			m_Vehicle_s.SetNoiseSteerSensitivity(0);
+			m_Vehicle_s.SetRoughnessSensitivity(0);		
+			m_Vehicle_c.SetPersistentHandBrake(0);
+			m_Vehicle_s.GearboxSetEfficiencyState(m_fEfficiency);
+			
+			
+			if(m_Vehicle_l)
+			{
+				m_Vehicle_l.SetLightsState(ELightType.Head, m_bLightsOn, 0);
+				m_Vehicle_l.SetLightsState(ELightType.Head, m_bLightsOn, 1);	
+			}
+			
+			//Start or stop engine
+			if (m_bStartEngine && !m_Vehicle_c.IsEngineOn())
+			{			
+				m_Vehicle_c.ForceStartEngine();
+				
+			} else if (!m_bStartEngine && m_Vehicle_c.IsEngineOn())  {
+				
+				m_Vehicle_c.ForceStopEngine();
+			}
+			
+				 
+			//Break and hand-brake
+		 	m_Vehicle_s.SetBreak(m_fBreak, m_bHandBrake);
+				
+			//Ggear
+			if(m_Vehicle_s.GetGear() != m_iGear)
+			{
+				m_Vehicle_s.SetGear(m_iGear);
+			}
+				
+			//Clutch
+		 	if (m_Vehicle_s.GetClutch() != m_fClutch)
+				m_Vehicle_s.SetClutch(m_fClutch);
+				
+			//Throttle
+		 	if (m_Vehicle_s.GetThrottle() != m_fThrottle)
+		 		m_Vehicle_s.SetThrottle(m_fThrottle);
+		}
+	}
+	
+	override bool CheckData(PS_AnimeContainer_CustomData data)
+	{
+		PS_AnimeContainer_Vehicle dataVehicle = PS_AnimeContainer_Vehicle.Cast(data);
+		
+		if (dataVehicle.m_bStartEngine != m_bStartEngine)
+			return true;
+		if (dataVehicle.m_bHandBrake != m_bHandBrake)
+			return true;
+		if (dataVehicle.m_bLightsOn != m_bLightsOn)
+			return true;
+		if (dataVehicle.m_iGear != m_iGear)
+			return true;
+		if (dataVehicle.m_fEfficiency != m_fEfficiency)
+			return true;
+		if (dataVehicle.m_fClutch != m_fClutch)
+			return true;
+		if (dataVehicle.m_fThrottle != m_fThrottle)
+			return true;
+		if (dataVehicle.m_fBreak != m_fBreak)
+			return true;
+		
+		return false;
+	}
+	override void WriteToFile(FileHandle fileHandle)
+	{
+		super.WriteToFile(fileHandle);
+		
+		fileHandle.Write(m_bStartEngine, 1);
+		fileHandle.Write(m_bHandBrake, 1);
+		fileHandle.Write(m_bLightsOn, 1);
+		fileHandle.Write(m_iGear, 1);
+		fileHandle.Write(m_fEfficiency, 4);
+		fileHandle.Write(m_fClutch, 4);
+		fileHandle.Write(m_fThrottle, 4);
+		fileHandle.Write(m_fBreak, 4);
+	}
+	override void ReadFromFile(FileHandle fileHandle)
+	{
+		fileHandle.Read(m_bStartEngine, 1);
+		fileHandle.Read(m_bHandBrake, 1);
+		fileHandle.Read(m_bLightsOn, 1);
+		fileHandle.Read(m_iGear, 1);
+		fileHandle.Read(m_fEfficiency, 4);
+		fileHandle.Read(m_fClutch, 4);
+		fileHandle.Read(m_fThrottle, 4);
+		fileHandle.Read(m_fBreak, 4);
+	}
+	
+	bool m_bStartEngine;
+	bool m_bHandBrake;
+	bool m_bLightsOn;
+	int m_iGear;
+	float m_fEfficiency;
+	float m_fClutch;
+	float m_fThrottle;
+	float m_fBreak;
 }
 
 class PS_AnimeContainer_Bone

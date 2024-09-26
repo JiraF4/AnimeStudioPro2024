@@ -167,10 +167,21 @@ class PS_AnimeStudioPro2024
 		}
 		
 		SCR_ChimeraCharacter character = SCR_ChimeraCharacter.Cast(m_AnimatedEntity);
+		Vehicle vehicle = Vehicle.Cast(m_AnimatedEntity);
 		if (character)
 		{
 			PS_AnimeContainer_Character chracterContainer = new PS_AnimeContainer_Character(m_AnimeContainer);
 			chracterContainer.ReadData(character);
+			if (!m_AnimeContainer.m_OldCustomData || m_AnimeContainer.m_OldCustomData.CheckData(chracterContainer))
+			{
+				m_AnimeContainer.m_OldCustomData = chracterContainer;
+				m_AnimeContainer.m_aCustomData.Insert(chracterContainer);
+			} else
+				m_AnimeContainer.m_aCustomData.Insert(null);
+		} if (vehicle)
+		{
+			PS_AnimeContainer_Vehicle chracterContainer = new PS_AnimeContainer_Vehicle(m_AnimeContainer);
+			chracterContainer.ReadData(vehicle);
 			if (!m_AnimeContainer.m_OldCustomData || m_AnimeContainer.m_OldCustomData.CheckData(chracterContainer))
 			{
 				m_AnimeContainer.m_OldCustomData = chracterContainer;

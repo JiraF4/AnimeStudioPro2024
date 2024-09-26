@@ -8,10 +8,15 @@ class PS_AnimeCinematicEntity : CinematicEntity
 	[Attribute()]
 	ref array<ref PS_AnimeStudioPro2024> m_aAnimateTrackers;
 	
+	[Attribute()]
+	bool m_bAutoPlay;
+	
 	//------------------------------------------------------------------------------------------------
 	void PS_AnimeCinematicEntity(IEntitySource src, IEntity parent)
 	{
 		SetEventMask(EntityEvent.FRAME);
+		if (m_bAutoPlay)
+			Play();
 	}
 	
 	override void EOnFrame(IEntity owner, float timeSlice)

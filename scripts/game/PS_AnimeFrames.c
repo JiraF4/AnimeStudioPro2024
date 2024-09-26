@@ -113,6 +113,9 @@ class PS_AnimeFrames
 					case PS_EAnimeContainer_CustomData.Character:
 						customData = new PS_AnimeContainer_Character(null);
 						break;
+					case PS_EAnimeContainer_CustomData.Vehicle:
+						customData = new PS_AnimeContainer_Vehicle(null);
+						break;
 				}
 				customData.ReadFromFile(fileHandle);
 			}
