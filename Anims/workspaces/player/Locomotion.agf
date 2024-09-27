@@ -1,0 +1,23 @@
+AnimSrcGraphFile {
+ Sheets {
+  AnimSrcGraphSheet Master {
+   Nodes {
+    AnimSrcNodeBlendT MasterControl {
+     Child0 "MasterControl 19516"
+    }
+    AnimSrcNodeBlendT "MasterControl 19516" {
+     EditorPos -3.1 -7.2
+     BlendTime "0.1"
+     Condition "DisableGraph"
+     Child0 "MasterControlOld"
+     Child1 "Bind Pose 15703"
+     OptimizeMin 1
+     PostEval 1
+    }
+    AnimSrcNodeBindPose "Bind Pose 15703" {
+     EditorPos -1.9 -5.4
+    }
+   }
+  }
+ }
+}

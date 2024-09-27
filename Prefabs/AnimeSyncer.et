@@ -1,0 +1,15 @@
+PS_AnimeSyncerEntity {
+ ID "626F3131B49E6A34"
+ components {
+  RplComponent "{626F3131B9B4CDAF}" {
+   Streamable Disabled
+  }
+ }
+ coords 127.518 1 127.702
+ m_aNames {
+  "G1" ""
+ }
+ m_aNums {
+  0
+ }
+}

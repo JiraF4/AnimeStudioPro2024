@@ -103,6 +103,8 @@ class PS_AnimeContainer_Character : PS_AnimeContainer_CustomData
 		EntitySlotInfo rightHandPointInfo = characterControllerComponent.GetRightHandPointInfo();
 		IEntity leftHandEntity = leftHandPointInfo.GetAttachedEntity();
 		IEntity rightHandEntity;
+		
+		/*
 		if (weaponComponent)
 			rightHandEntity = weaponComponent.GetOwner();
 		if (leftHandEntity)
@@ -115,6 +117,7 @@ class PS_AnimeContainer_Character : PS_AnimeContainer_CustomData
 				rightHandEntity.SetFlags(EntityFlags.VISIBLE, true);
 			else
 				rightHandEntity.ClearFlags(EntityFlags.VISIBLE, true);
+		*/
 	}
 	
 	override bool CheckData(PS_AnimeContainer_CustomData data)

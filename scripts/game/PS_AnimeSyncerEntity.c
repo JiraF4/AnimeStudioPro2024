@@ -9,8 +9,6 @@ class PS_AnimeSyncerEntity : GenericEntity
 	
 	[Attribute()]
 	ref array<string> m_aNames;
-	[Attribute()]
-	ref array<int> m_aNums;
 	
 	ref map<string, RplId> m_mEntities = new map<string, RplId>();
 	
@@ -34,12 +32,19 @@ class PS_AnimeSyncerEntity : GenericEntity
 		
 		for (int i = 0; i < m_aNames.Count(); i++)
 		{
-			string name = m_aNames[i];
-			int num = m_aNums[i];
-			
-			string nameMap = name;
-			if (num > -1)
-				nameMap = nameMap + "|" + num.ToString();
+			array<string> outTokens = {};
+			string nameRaw = m_aNames[i];
+			string name;
+			nameRaw.Split("|", outTokens, true);
+			int num = -1;
+			if (outTokens.Count() < 2)
+			{
+				name = nameRaw;
+				num = -1;
+			} else {
+				name = outTokens[0];
+				num = outTokens[1].ToInt(-1);
+			}
 			
 			GenericEntity entity = GenericEntity.Cast(owner.GetWorld().FindEntityByName(name));
 			if (num >= 0)
@@ -51,7 +56,7 @@ class PS_AnimeSyncerEntity : GenericEntity
 			}
 			
 			RplId id = Replication.FindId(entity);
-			m_mEntities.Insert(nameMap, id);
+			m_mEntities.Insert(nameRaw, id);
 		}
 	}
 

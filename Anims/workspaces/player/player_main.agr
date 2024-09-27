@@ -1,0 +1,10 @@
+AnimSrcGraph {
+ ControlTemplate AnimSrcGCT "{5190AC4BE1BF436F}" {
+  Variables {
+   AnimSrcGCTVarBool DisableGraph {
+   }
+  }
+ }
+ Debug AnimSrcGD "{62770B53956243A9}" {
+ }
+}
