@@ -19,6 +19,8 @@ class PS_AnimeStudioPro2024
 	[Attribute("")]
 	bool m_bUseGlobalMatrix;
 	[Attribute("")]
+	bool m_bUseGlobalTransform;
+	[Attribute("")]
 	ref PS_AnimeStudioBoneSet m_Bones;
 	
 	IEntity m_AnimatedEntity;
@@ -31,6 +33,9 @@ class PS_AnimeStudioPro2024
 	ref PS_AnimeContainer m_AnimeContainer;
 	ref map<string, vector> m_mDefaultBoneOffset = new map<string, vector>();
 	ref map<string, vector> m_mDefaultBoneAngles = new map<string, vector>();
+	
+	float m_fStartTime = 0;
+	int m_iCharacterNum = 0;
 	
 	void Update(IEntity owner, float timeSlice) 
 	{
@@ -49,11 +54,13 @@ class PS_AnimeStudioPro2024
 		if (!m_CinematicEntity)
 			return;
 		
-		float time = GetGame().GetWorld().GetWorldTime();
+		float time = GetGame().GetWorld().GetWorldTime() - m_fStartTime;
 		if (!m_AnimatedEntity)
 		{
 			if (m_sAnimeEntityName == "")
+			{
 				m_AnimatedEntity = SCR_PlayerController.GetLocalControlledEntity();
+			}
 			else
 				m_AnimatedEntity = owner.GetWorld().FindEntityByName(m_sAnimeEntityName);
 			
@@ -62,14 +69,25 @@ class PS_AnimeStudioPro2024
 		
 		if (!m_AnimatedEntity)
 			return;
+		GetGame().GetInputManager().ActivateContext("PS_AnimeStudioContext");
 		
 		// Frame time
 		m_AnimeContainer.m_aTime.Insert(time);
 		
 		// Entity transform
 		vector matWorld[4];
-		m_AnimatedEntity.GetLocalTransform(matWorld);
-		IEntity animatedEntityParent = m_AnimatedEntity.GetParent();
+		IEntity animatedEntityParent;
+		if (m_bUseGlobalTransform)
+		{
+			m_AnimatedEntity.GetWorldTransform(matWorld);
+			animatedEntityParent = null;
+		}
+		else
+		{
+			m_AnimatedEntity.GetLocalTransform(matWorld);
+			animatedEntityParent = m_AnimatedEntity.GetParent();
+		}
+		
 		if (m_AnimatedEntityParent != animatedEntityParent)
 		{
 			m_AnimatedEntityParent = animatedEntityParent;
@@ -380,6 +398,19 @@ class PS_AnimeStudioPro2024
 	}
 	
 	//------------------------------------------------------------------------------------------------
+	void Reset()
+	{
+		m_CinematicEntity = null;
+		s_mAnimeContainers = null;
+		m_AnimeContainer = null;
+		
+		m_AnimatedEntity = null;
+		m_AnimeContainer = null;
+		
+		m_fStartTime = GetGame().GetWorld().GetWorldTime();
+	}
+	
+	//------------------------------------------------------------------------------------------------
 	void UpdateTracks(WorldEditorAPI api, IEntitySource entitySource)
 	{
 		m_Api = api;
@@ -400,8 +431,12 @@ class PS_AnimeStudioPro2024
 		m_AnimeContainer = s_mAnimeContainers[owner.GetName() + "_" + m_sAnimeEntityName];
 		if (!m_AnimeContainer)
 			return;
+		if (m_AnimeContainer.m_aTime.Count() == 0)
+			return;
 		
-		FileHandle fileHandle = FileIO.OpenFile(m_sAnimeFilePath, FileMode.WRITE);
+		string filePath = m_sAnimeFilePath;
+		filePath.Replace("#", m_iCharacterNum.ToString());
+		FileHandle fileHandle = FileIO.OpenFile(filePath, FileMode.WRITE);
 		
 		// Frames
 		fileHandle.Write((int)(m_AnimeContainer.m_aTime[m_AnimeContainer.m_aTime.Count()-1] / 16.6666), 2);

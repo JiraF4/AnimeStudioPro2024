@@ -58,7 +58,8 @@ class PS_AnimeContainer_Character : PS_AnimeContainer_CustomData
 			m_iFireMode = weaponComponent.GetWeaponType();
 			if (m_AnimeContainer.m_iOldBarrelIndex != -1)
 				m_iFireNeed = weaponComponent.GetCurrentMuzzle().GetMagazine().GetAmmoCount() != m_AnimeContainer.m_iOldBarrelIndex;
-			m_AnimeContainer.m_iOldBarrelIndex = weaponComponent.GetCurrentMuzzle().GetMagazine().GetAmmoCount();
+			if (weaponComponent.GetCurrentMuzzle() && weaponComponent.GetCurrentMuzzle().GetMagazine())
+				m_AnimeContainer.m_iOldBarrelIndex = weaponComponent.GetCurrentMuzzle().GetMagazine().GetAmmoCount();
 		}
 		else
 		{

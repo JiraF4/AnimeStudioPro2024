@@ -13,11 +13,14 @@ class PS_AnimeCinematicTrack : CinematicTrackBase
 	[Attribute("")]
 	string m_sTrackEditAction;
 	
+	[Attribute("")]
+	bool m_bDie;
+	
 	string m_sEntityName;
 	int m_iCharacterNum;
 	
 	private World m_GlobalWorld;
-	private string m_sAnimePathOld;
+	string m_sAnimePathOld;
 	
 	ref PS_AnimeFrames m_AnimeFrames;
 	
@@ -27,16 +30,28 @@ class PS_AnimeCinematicTrack : CinematicTrackBase
 	CharacterControllerComponent m_CharacterControllerComponent;
 	TNodeId m_iParentBoneId;
 	
+	bool m_bDead;
 	BaseGameEntity m_Entity;
 	vector m_vWorldMat[4];
+	
+	static ref array<PS_AnimeCinematicTrack> s_aTracks;
 	
 	override void OnInit(World world)
 	{
 		m_GlobalWorld = world;
+		m_AnimeFrames = null;
+		m_sAnimePathOld = "";
+		
+		if (!s_aTracks)
+			s_aTracks = {};
+		s_aTracks.Insert(this);
 	}
 	
 	override void OnApply(float time)
 	{
+		if (!m_GlobalWorld)
+			m_GlobalWorld = GetGame().GetWorld();
+		
 		if (Replication.IsServer())
 		{
 			array<string> outTokens = {};
@@ -65,9 +80,13 @@ class PS_AnimeCinematicTrack : CinematicTrackBase
 		
 		if (!m_AnimeFrames)
 			return;
+		if (m_AnimeFrames.m_aFrames.Count() == 0)
+			return;
+		if (!PS_AnimeSyncerEntity.s_Instance)
+			return;
 		
-		GenericEntity entity;
-		if (Replication.IsServer())
+		GenericEntity entity = GenericEntity.Cast(PS_AnimeSyncerEntity.s_Instance.GetEntity(m_sEntityNameNum));
+		if (Replication.IsServer() && !entity)
 		{
 			if (m_sEntityName != "")
 				entity = GenericEntity.Cast(m_GlobalWorld.FindEntityByName(m_sEntityName));
@@ -101,14 +120,12 @@ class PS_AnimeCinematicTrack : CinematicTrackBase
 				}
 			}
 		}
-		else 
-		{
-			entity = GenericEntity.Cast(PS_AnimeSyncerEntity.s_Instance.GetEntity(m_sEntityNameNum));
-		}
 		
 		if (!entity)
 			return;
-		entity.GetPhysics().SetVelocity("0 0 0");
+		Physics physics = entity.GetPhysics();
+		if (physics && !m_bDie)
+			physics.SetVelocity("0 0 0");
 		m_Character = SCR_ChimeraCharacter.Cast(entity);
 		if (m_Character)
 			m_CharacterControllerComponent = m_Character.GetCharacterController();
@@ -117,9 +134,8 @@ class PS_AnimeCinematicTrack : CinematicTrackBase
 		PS_AnimeFrame frame = m_AnimeFrames.m_aFrames[framesProgress];
 		PS_AnimeFrame frameNext = frame.m_NextFrame;
 		
-		if (framesProgress == (m_AnimeFrames.m_aFrames.Count()-1))
+		if (framesProgress == (m_AnimeFrames.m_aFrames.Count()-1) || m_bDie)
 		{
-			
 			// Reset bones
 			Animation animation = entity.GetAnimation();
 			foreach (string boneName, PS_AnimeFrameTransform transform : frame.m_mBones)
@@ -134,6 +150,25 @@ class PS_AnimeCinematicTrack : CinematicTrackBase
 				CharacterAnimationComponent characterAnimationComponent = m_Character.GetAnimationComponent();
 				TAnimGraphVariable disableGraphVariable = characterAnimationComponent.BindVariableBool("DisableGraph");
 				characterAnimationComponent.SetVariableBool(disableGraphVariable, false);
+			}
+			
+			if (m_bDie && m_bDead != m_bDie)
+			{
+				m_bDead = m_bDie;
+				if (!m_Character)
+				{
+					if (physics)
+					{
+						physics.SetActive(ActiveState.ACTIVE);
+					}
+					return;
+				}
+				
+				CharacterControllerComponent characterControllerComponent = m_Character.GetCharacterController();
+				if (!characterControllerComponent)
+					return;
+				
+				characterControllerComponent.ForceDeath();
 			}
 			
 			if (m_Entity)

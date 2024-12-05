@@ -17,6 +17,67 @@ class PS_AnimeCinematicEntity : CinematicEntity
 		SetEventMask(EntityEvent.FRAME);
 		if (m_bAutoPlay)
 			Play();
+		
+		GetGame().GetInputManager().AddActionListener("PS_AnimeSave" , EActionTrigger.DOWN, AnimeSave );
+		GetGame().GetInputManager().AddActionListener("PS_AnimeStop" , EActionTrigger.DOWN, AnimeStop );
+		GetGame().GetInputManager().AddActionListener("PS_AnimeStart", EActionTrigger.DOWN, AnimeStart);
+		GetGame().GetInputManager().AddActionListener("PS_AnimeNextCharacter", EActionTrigger.DOWN, AnimeNextCharacter);
+		GetGame().GetInputManager().AddActionListener("PS_AnimePrevCharacter", EActionTrigger.DOWN, AnimePrevCharacter);
+		GetGame().GetInputManager().AddActionListener("PS_AnimeForceKnock", EActionTrigger.DOWN, AnimeForceKnock);
+	}
+	
+	protected void AnimeForceKnock(float value, EActionTrigger trigger)
+	{
+		IEntity entity = SCR_PlayerController.GetLocalControlledEntity();
+		SCR_ChimeraCharacter character = SCR_ChimeraCharacter.Cast(entity);
+		if (!character)
+			return;
+		
+		CharacterControllerComponent characterControllerComponent = character.GetCharacterController();
+		characterControllerComponent.SetUnconscious(!characterControllerComponent.IsUnconscious());
+		//characterControllerComponent.ForceDeath();
+	}
+	
+	protected void AnimeSave(float value, EActionTrigger trigger)
+	{
+		foreach (PS_AnimeStudioPro2024 animeStudio : m_aAnimateTrackers)
+			animeStudio.UpdateTracksFile(this);
+		foreach (PS_AnimeStudioPro2024 animeStudio : m_aAnimateTrackers)
+			animeStudio.Reset();
+	}
+	
+	protected void AnimeStop(float value, EActionTrigger trigger)
+	{
+		Play();
+	}
+	
+	protected void AnimeStart(float value, EActionTrigger trigger)
+	{
+		Stop();
+		
+		foreach (PS_AnimeCinematicTrack track : PS_AnimeCinematicTrack.s_aTracks)
+		{
+			if (track)
+				track.m_sAnimePathOld = "";
+		}
+	}
+	
+	protected void AnimeNextCharacter(float value, EActionTrigger trigger)
+	{
+		foreach (PS_AnimeStudioPro2024 animeStudio : m_aAnimateTrackers)
+		{
+			animeStudio.m_iCharacterNum++;
+			Print(animeStudio.m_iCharacterNum);
+		}
+	}
+	
+	protected void AnimePrevCharacter(float value, EActionTrigger trigger)
+	{
+		foreach (PS_AnimeStudioPro2024 animeStudio : m_aAnimateTrackers)
+		{
+			animeStudio.m_iCharacterNum--;
+			Print(animeStudio.m_iCharacterNum);
+		}
 	}
 	
 	override void EOnFrame(IEntity owner, float timeSlice)
