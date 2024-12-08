@@ -44,6 +44,7 @@ class PS_AnimeContainer_Character : PS_AnimeContainer_CustomData
 		m_iDataType = PS_EAnimeContainer_CustomData.Character;
 	}
 	
+	static bool s_bReloading;
 	override void ReadData(IEntity entity)
 	{
 		SCR_ChimeraCharacter character = SCR_ChimeraCharacter.Cast(entity);
@@ -55,11 +56,24 @@ class PS_AnimeContainer_Character : PS_AnimeContainer_CustomData
 			array<BaseMuzzleComponent> outMuzzles = {};
 			weaponComponent.GetMuzzlesList(outMuzzles);
 			m_iMuzzleMode = outMuzzles.Find(weaponComponent.GetCurrentMuzzle());
-			m_iFireMode = weaponComponent.GetWeaponType();
-			if (m_AnimeContainer.m_iOldBarrelIndex != -1)
-				m_iFireNeed = weaponComponent.GetCurrentMuzzle().GetMagazine().GetAmmoCount() != m_AnimeContainer.m_iOldBarrelIndex;
+			m_iFireMode = weaponComponent.GetCurrentMuzzle().GetFireModeIndex();
+			m_iFireNeed = GetGame().GetInputManager().GetActionValue("CharacterFire");
 			if (weaponComponent.GetCurrentMuzzle() && weaponComponent.GetCurrentMuzzle().GetMagazine())
 				m_AnimeContainer.m_iOldBarrelIndex = weaponComponent.GetCurrentMuzzle().GetMagazine().GetAmmoCount();
+			if (characterControllerComponent.IsReloading())
+			{
+				if (!s_bReloading)
+				{
+					m_iNeedReload = 1;
+					s_bReloading = true;
+				}
+			} else {
+				if (s_bReloading)
+				{
+					m_iNeedReload = 0;
+					s_bReloading = false;
+				}
+			}
 		}
 		else
 		{
@@ -95,9 +109,16 @@ class PS_AnimeContainer_Character : PS_AnimeContainer_CustomData
 			return;
 		
 		CharacterControllerComponent characterControllerComponent = character.GetCharacterController();
-		characterControllerComponent.SetMuzzle(m_iMuzzleMode);
-		characterControllerComponent.SetFireMode(m_iFireMode);
+		if (m_iFireNeed != 1)
+		{
+			characterControllerComponent.SetSafety(false,true);
+			characterControllerComponent.SetMuzzle(m_iMuzzleMode);
+			characterControllerComponent.SetFireMode(m_iFireMode);
+			characterControllerComponent.SetWeaponRaised(1);
+		}
 		characterControllerComponent.SetFireWeaponWanted(m_iFireNeed);
+		if (m_iNeedReload)
+			characterControllerComponent.ReloadWeapon();
 		BaseWeaponComponent weaponComponent = characterControllerComponent.GetWeaponManagerComponent().GetCurrentWeapon();
 		
 		EntitySlotInfo leftHandPointInfo = characterControllerComponent.GetLeftHandPointInfo();
@@ -135,6 +156,8 @@ class PS_AnimeContainer_Character : PS_AnimeContainer_CustomData
 			return true;
 		if (dataCharacter.m_iRightPropHidden != m_iRightPropHidden)
 			return true;
+		if (dataCharacter.m_iNeedReload != m_iNeedReload)
+			return true;
 		
 		return false;
 	}
@@ -148,6 +171,7 @@ class PS_AnimeContainer_Character : PS_AnimeContainer_CustomData
 		fileHandle.Write(m_iFireMode, 1);
 		fileHandle.Write(m_iLeftPropHidden, 1);
 		fileHandle.Write(m_iRightPropHidden, 1);
+		fileHandle.Write(m_iNeedReload, 1);
 	}
 	
 	override void ReadFromFile(FileHandle fileHandle)
@@ -157,6 +181,7 @@ class PS_AnimeContainer_Character : PS_AnimeContainer_CustomData
 		fileHandle.Read(m_iFireMode, 1);
 		fileHandle.Read(m_iLeftPropHidden, 1);
 		fileHandle.Read(m_iRightPropHidden, 1);
+		fileHandle.Read(m_iNeedReload, 1);
 	}
 	
 	int m_iMuzzleMode;
@@ -165,6 +190,8 @@ class PS_AnimeContainer_Character : PS_AnimeContainer_CustomData
 	
 	int m_iLeftPropHidden;
 	int m_iRightPropHidden;
+	
+	int m_iNeedReload;
 }
 
 class PS_AnimeContainer_Vehicle : PS_AnimeContainer_CustomData

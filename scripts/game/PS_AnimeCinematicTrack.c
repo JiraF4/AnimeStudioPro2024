@@ -132,6 +132,8 @@ class PS_AnimeCinematicTrack : CinematicTrackBase
 		
 		float framesProgress = Math.Clamp(m_fProgress, 0, (m_AnimeFrames.m_aFrames.Count()-1));
 		PS_AnimeFrame frame = m_AnimeFrames.m_aFrames[framesProgress];
+		
+		Print(frame.m_CustomData);
 		PS_AnimeFrame frameNext = frame.m_NextFrame;
 		
 		if (framesProgress == (m_AnimeFrames.m_aFrames.Count()-1) || m_bDie)

@@ -196,7 +196,7 @@ class PS_AnimeStudioPro2024
 				m_AnimeContainer.m_aCustomData.Insert(chracterContainer);
 			} else
 				m_AnimeContainer.m_aCustomData.Insert(null);
-		} if (vehicle)
+		} else if (vehicle)
 		{
 			PS_AnimeContainer_Vehicle chracterContainer = new PS_AnimeContainer_Vehicle(m_AnimeContainer);
 			chracterContainer.ReadData(vehicle);
