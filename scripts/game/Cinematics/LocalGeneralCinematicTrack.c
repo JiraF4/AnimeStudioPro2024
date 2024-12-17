@@ -1,4 +1,4 @@
-[CinematicTrackAttribute(name:"General Track", description:"Track used for animating general parameters of entities")]
+[CinematicTrackAttribute(name:"Local general Track", description:"Track used for animating general parameters of entities")]
 class LocalGeneralCinematicTrack : CinematicTrackBase
 {
 	
