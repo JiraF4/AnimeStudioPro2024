@@ -5,17 +5,42 @@ class PS_AnimeCinematicEntityClass : CinematicEntityClass
 
 class PS_AnimeCinematicEntity : CinematicEntity
 {
+	static const string ANIME_MENU_LAYOUT = "{CFEE08E229DC6630}UI/AnimeEditorMenu.layout";
+	
+	static Widget s_wAnimeEditorMenu;
+	static TextWidget s_wAnimeFile;
+	static TextWidget s_wAnimePlay;
+	static TextWidget s_wAnimeRecord;
+	
 	[Attribute()]
 	ref array<ref PS_AnimeStudioPro2024> m_aAnimateTrackers;
 	
 	[Attribute()]
 	bool m_bAutoPlay;
 	
+	[Attribute()]
+	bool m_bShowMenu;
+	
+	bool m_bRecord;
+	
 	ref array<PS_AnimeCinematicEntity> m_aAnimeEntities;
 	
 	//------------------------------------------------------------------------------------------------
 	void PS_AnimeCinematicEntity(IEntitySource src, IEntity parent)
 	{
+		if (m_bShowMenu && !s_wAnimeEditorMenu)
+		{
+			s_wAnimeEditorMenu = GetGame().GetWorkspace().FindAnyWidget("AnimeEditorMenu");
+			if (!s_wAnimeEditorMenu)
+			{
+				Widget widget = GetGame().GetWorkspace().CreateWidgets(ANIME_MENU_LAYOUT);
+				s_wAnimeEditorMenu = GetGame().GetWorkspace().FindAnyWidget("AnimeEditorMenu");
+			}
+			s_wAnimeFile = TextWidget.Cast(s_wAnimeEditorMenu.FindAnyWidget("AnimeFile"));
+			s_wAnimePlay = TextWidget.Cast(s_wAnimeEditorMenu.FindAnyWidget("AnimePlay"));
+			s_wAnimeRecord = TextWidget.Cast(s_wAnimeEditorMenu.FindAnyWidget("AnimeRecord"));
+		}
+		
 		if (!m_aAnimeEntities)
 			m_aAnimeEntities = new array<PS_AnimeCinematicEntity>();
 		m_aAnimeEntities.Insert(this);
@@ -47,20 +72,33 @@ class PS_AnimeCinematicEntity : CinematicEntity
 	protected void AnimeSave(float value, EActionTrigger trigger)
 	{
 		#ifdef WORKBENCH
-		foreach (PS_AnimeStudioPro2024 animeStudio : m_aAnimateTrackers)
-			animeStudio.UpdateTracksFile(this);
-		foreach (PS_AnimeStudioPro2024 animeStudio : m_aAnimateTrackers)
-			animeStudio.Reset();
+		if (!m_bRecord)
+		{
+			s_wAnimeRecord.SetText("Record");
+			foreach (PS_AnimeStudioPro2024 animeStudio : m_aAnimateTrackers)
+				animeStudio.Reset();
+			m_bRecord = true;
+		}
+		else
+		{
+			s_wAnimeRecord.SetText("");
+			foreach (PS_AnimeStudioPro2024 animeStudio : m_aAnimateTrackers)
+				animeStudio.UpdateTracksFile(this);
+			m_bRecord = false;
+		}
 		#endif
 	}
 	
 	protected void AnimeStop(float value, EActionTrigger trigger)
 	{
+		AnimeStart(value, trigger);
+		s_wAnimePlay.SetText("Play");
 		Play();
 	}
 	
 	protected void AnimeStart(float value, EActionTrigger trigger)
 	{
+		s_wAnimePlay.SetText("");
 		Stop();
 		
 		PS_AnimeCinematicTrack.s_mFramesCache = new map<string, ref PS_AnimeFrames>();
@@ -76,6 +114,7 @@ class PS_AnimeCinematicEntity : CinematicEntity
 		foreach (PS_AnimeStudioPro2024 animeStudio : m_aAnimateTrackers)
 		{
 			animeStudio.m_iCharacterNum++;
+			animeStudio.SetNameDelay(animeStudio.m_iCharacterNum);
 			Print(animeStudio.m_iCharacterNum);
 		}
 	}
@@ -85,14 +124,20 @@ class PS_AnimeCinematicEntity : CinematicEntity
 		foreach (PS_AnimeStudioPro2024 animeStudio : m_aAnimateTrackers)
 		{
 			animeStudio.m_iCharacterNum--;
+			animeStudio.SetNameDelay(animeStudio.m_iCharacterNum);
 			Print(animeStudio.m_iCharacterNum);
 		}
 	}
 	
 	override void EOnFrame(IEntity owner, float timeSlice)
 	{
-		foreach (PS_AnimeStudioPro2024 animeStudio : m_aAnimateTrackers)
-			animeStudio.Update(owner, timeSlice);
+		if (!m_bShowMenu)
+			return;
+		
+		GetGame().GetInputManager().ActivateContext("PS_AnimeStudioContext");
+		if (m_bRecord)
+			foreach (PS_AnimeStudioPro2024 animeStudio : m_aAnimateTrackers)
+				animeStudio.Update(owner, timeSlice);
 	}
 	
 	#ifdef WORKBENCH

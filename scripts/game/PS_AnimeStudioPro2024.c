@@ -9,6 +9,7 @@ class PS_AnimeStudioPro2024Title: BaseContainerCustomTitle
 [BaseContainerProps(), PS_AnimeStudioPro2024Title()]
 class PS_AnimeStudioPro2024
 {
+	
 	[Attribute("$profile:isekai.anime")]
 	string m_sAnimeFilePath;
 	
@@ -36,6 +37,19 @@ class PS_AnimeStudioPro2024
 	
 	float m_fStartTime = 0;
 	int m_iCharacterNum = 0;
+	
+	void PS_AnimeStudioPro2024()
+	{
+		GetGame().GetCallqueue().Call(SetNameDelay, 0);
+	}
+	
+	void SetNameDelay(int num)
+	{
+		string name = m_sAnimeFilePath;
+		name.Replace("#", num.ToString());
+		if (PS_AnimeCinematicEntity.s_wAnimeFile)
+			PS_AnimeCinematicEntity.s_wAnimeFile.SetText(name);
+	}
 	
 	void Update(IEntity owner, float timeSlice) 
 	{
@@ -69,7 +83,6 @@ class PS_AnimeStudioPro2024
 		
 		if (!m_AnimatedEntity)
 			return;
-		GetGame().GetInputManager().ActivateContext("PS_AnimeStudioContext");
 		
 		// Frame time
 		m_AnimeContainer.m_aTime.Insert(time);

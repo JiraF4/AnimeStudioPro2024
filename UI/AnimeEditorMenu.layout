@@ -1,0 +1,53 @@
+FrameWidgetClass {
+ Name "AnimeEditorMenu"
+ "Z Order" 1000
+ {
+  TextWidgetClass "{6323016C365686A1}" {
+   Name "AnimeFile"
+   Slot FrameWidgetSlot "{6323016C365686B7}" {
+    PositionX 0
+    OffsetLeft 0
+    PositionY 0
+    OffsetTop 0
+    SizeX 607
+    OffsetRight -607
+    SizeY 31
+    OffsetBottom -31
+   }
+   "Z Order" 1000
+   Text "AnimeEditorMenu"
+  }
+  TextWidgetClass "{632301688C39A2CF}" {
+   Name "AnimePlay"
+   Slot FrameWidgetSlot "{6323016C365686B7}" {
+    PositionX 0
+    OffsetLeft 0
+    PositionY 31
+    OffsetTop 31
+    SizeX 607
+    OffsetRight -607
+    SizeY 31
+    OffsetBottom -62
+   }
+   "Z Order" 1000
+   Color 0.251 0.502 0 1
+   Text ""
+  }
+  TextWidgetClass "{632301688C6B2AD8}" {
+   Name "AnimeRecord"
+   Slot FrameWidgetSlot "{6323016C365686B7}" {
+    PositionX 0
+    OffsetLeft 0
+    PositionY 62
+    OffsetTop 62
+    SizeX 607
+    OffsetRight -607
+    SizeY 31
+    OffsetBottom -93
+   }
+   "Z Order" 1000
+   Color 0.502 0 0 1
+   Text ""
+  }
+ }
+}
