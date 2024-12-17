@@ -11,9 +11,15 @@ class PS_AnimeCinematicEntity : CinematicEntity
 	[Attribute()]
 	bool m_bAutoPlay;
 	
+	ref array<PS_AnimeCinematicEntity> m_aAnimeEntities;
+	
 	//------------------------------------------------------------------------------------------------
 	void PS_AnimeCinematicEntity(IEntitySource src, IEntity parent)
 	{
+		if (!m_aAnimeEntities)
+			m_aAnimeEntities = new array<PS_AnimeCinematicEntity>();
+		m_aAnimeEntities.Insert(this);
+		
 		SetEventMask(EntityEvent.FRAME);
 		if (m_bAutoPlay)
 			Play();
@@ -40,10 +46,12 @@ class PS_AnimeCinematicEntity : CinematicEntity
 	
 	protected void AnimeSave(float value, EActionTrigger trigger)
 	{
+		#ifdef WORKBENCH
 		foreach (PS_AnimeStudioPro2024 animeStudio : m_aAnimateTrackers)
 			animeStudio.UpdateTracksFile(this);
 		foreach (PS_AnimeStudioPro2024 animeStudio : m_aAnimateTrackers)
 			animeStudio.Reset();
+		#endif
 	}
 	
 	protected void AnimeStop(float value, EActionTrigger trigger)
@@ -55,6 +63,7 @@ class PS_AnimeCinematicEntity : CinematicEntity
 	{
 		Stop();
 		
+		PS_AnimeCinematicTrack.s_mFramesCache = new map<string, ref PS_AnimeFrames>();
 		foreach (PS_AnimeCinematicTrack track : PS_AnimeCinematicTrack.s_aTracks)
 		{
 			if (track)
@@ -89,6 +98,17 @@ class PS_AnimeCinematicEntity : CinematicEntity
 	#ifdef WORKBENCH
 	WorldEditorAPI m_Api;
 	IEntitySource m_OwnerSource;
+	
+	//------------------------------------------------------------------------------------------------
+	void ResetCache()
+	{
+		PS_AnimeCinematicTrack.s_mFramesCache = new map<string, ref PS_AnimeFrames>();
+		foreach (PS_AnimeCinematicTrack track : PS_AnimeCinematicTrack.s_aTracks)
+		{
+			if (track)
+				track.m_sAnimePathOld = "";
+		}
+	}
 	
 	//------------------------------------------------------------------------------------------------
 	void ApplyActions()
@@ -171,8 +191,11 @@ class PS_AnimeCinematicEntity : CinematicEntity
 		}
 		switch (id)
 		{
-			case -1:
+			case -2:
 				ApplyActions();
+				break;
+			case -1:
+				ResetCache();
 				break;
 			default:
 				break;
@@ -184,7 +207,8 @@ class PS_AnimeCinematicEntity : CinematicEntity
 	{
 		array<ref WB_UIMenuItem> items = {};
 		
-		items.Insert(new WB_UIMenuItem("Apply actions", -1));
+		items.Insert(new WB_UIMenuItem("Apply actions", -2));
+		items.Insert(new WB_UIMenuItem("Reset cache", -1));
 		foreach (int i, PS_AnimeStudioPro2024 animeStudio : m_aAnimateTrackers)
 		{
 			items.Insert(new WB_UIMenuItem("Update: " + animeStudio.m_sAnimeFilePath, i));
@@ -192,5 +216,56 @@ class PS_AnimeCinematicEntity : CinematicEntity
 		
 		return items;
 	}
+	
+	/*
+	override bool _WB_OnKeyChanged(BaseContainer src, string key, BaseContainerList ownerContainers, IEntity parent)
+	{
+		if (key != "Keyframes")
+			return true;
+			
+		WorldEditorAPI api = _WB_GetEditorAPI();
+		IEntitySource entityContainer = api.EntityToSource(this);
+		BaseContainer sceneContainer = entityContainer.GetObject("Scene");
+		BaseContainerList sceneContainerTracks = sceneContainer.GetObjectArray("Tracks");
+		
+		array<ref ContainerIdPathEntry> valuePath = new array<ref ContainerIdPathEntry>();
+		valuePath.Insert(new ContainerIdPathEntry("Scene"));
+		for (int i = 0; i < sceneContainerTracks.Count(); i++)
+		{
+			valuePath.Insert(new ContainerIdPathEntry("Tracks", i));
+			
+			BaseContainer trackContainer = sceneContainerTracks.Get(i);
+			string trackType;
+			trackContainer.Get("ClassName", trackType);
+			if (trackType == "PS_AnimeCinematicTrack")
+			{
+				valuePath.Insert(new ContainerIdPathEntry("ChildTracks", 1));
+				valuePath.Insert(new ContainerIdPathEntry("Keyframes", 0));
+				
+				BaseContainerList childTracksContainer = trackContainer.GetObjectArray("ChildTracks");
+				BaseContainer progressContainer = childTracksContainer.Get(1);
+				BaseContainerList keyFramesContainer = progressContainer.GetObjectArray("Keyframes");
+				BaseContainer keyFrameContainer = keyFramesContainer.Get(0);
+				
+				if (keyFrameContainer)
+				{
+					int frameNumber;
+					keyFrameContainer.Get("FrameNumber", frameNumber);
+					api.SetVariableValue(entityContainer, valuePath, "Value", frameNumber.ToString());
+					api.UpdateSelectionGui();
+					api.GetWorldPath().UpdateEntities();
+				}
+				
+				valuePath.Remove(3);
+				valuePath.Remove(2);
+			}
+			
+			valuePath.Remove(1);
+		}
+		
+		
+		return true;
+	}
+	*/
 	#endif
 }

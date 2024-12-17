@@ -114,7 +114,7 @@ class PS_AnimeContainer_Character : PS_AnimeContainer_CustomData
 			characterControllerComponent.SetSafety(false,true);
 			characterControllerComponent.SetMuzzle(m_iMuzzleMode);
 			characterControllerComponent.SetFireMode(m_iFireMode);
-			characterControllerComponent.SetWeaponRaised(1);
+			//characterControllerComponent.SetWeaponRaised(1);
 		}
 		characterControllerComponent.SetFireWeaponWanted(m_iFireNeed);
 		if (m_iNeedReload)

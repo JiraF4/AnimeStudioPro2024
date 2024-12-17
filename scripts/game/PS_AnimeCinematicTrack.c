@@ -22,7 +22,7 @@ class PS_AnimeCinematicTrack : CinematicTrackBase
 	private World m_GlobalWorld;
 	string m_sAnimePathOld;
 	
-	ref PS_AnimeFrames m_AnimeFrames;
+	PS_AnimeFrames m_AnimeFrames;
 	
 	string m_sAnimatedEntityParentName;
 	IEntity m_AnimatedEntityParent;
@@ -35,13 +35,16 @@ class PS_AnimeCinematicTrack : CinematicTrackBase
 	vector m_vWorldMat[4];
 	
 	static ref array<PS_AnimeCinematicTrack> s_aTracks;
+	static ref map<string, ref PS_AnimeFrames> s_mFramesCache;
 	
 	override void OnInit(World world)
 	{
 		m_GlobalWorld = world;
-		m_AnimeFrames = null;
-		m_sAnimePathOld = "";
+		//m_AnimeFrames = null;
+		//m_sAnimePathOld = "";
 		
+		if (!s_mFramesCache)
+			s_mFramesCache = new map<string, ref PS_AnimeFrames>();
 		if (!s_aTracks)
 			s_aTracks = {};
 		s_aTracks.Insert(this);
@@ -74,8 +77,14 @@ class PS_AnimeCinematicTrack : CinematicTrackBase
 				m_AnimeFrames = null;
 				return;
 			}
-			m_AnimeFrames = new PS_AnimeFrames();
-			m_AnimeFrames.LoadFromFile(m_sAnimePath);
+			if (s_mFramesCache.Contains(m_sAnimePath) && s_mFramesCache[m_sAnimePath])
+			{
+				m_AnimeFrames = s_mFramesCache[m_sAnimePath];
+			} else {
+				s_mFramesCache[m_sAnimePath] = new PS_AnimeFrames();
+				m_AnimeFrames = s_mFramesCache[m_sAnimePath];
+				m_AnimeFrames.LoadFromFile(m_sAnimePath);
+			}
 		}
 		
 		if (!m_AnimeFrames)
@@ -133,7 +142,6 @@ class PS_AnimeCinematicTrack : CinematicTrackBase
 		float framesProgress = Math.Clamp(m_fProgress, 0, (m_AnimeFrames.m_aFrames.Count()-1));
 		PS_AnimeFrame frame = m_AnimeFrames.m_aFrames[framesProgress];
 		
-		Print(frame.m_CustomData);
 		PS_AnimeFrame frameNext = frame.m_NextFrame;
 		
 		if (framesProgress == (m_AnimeFrames.m_aFrames.Count()-1) || m_bDie)
