@@ -55,6 +55,54 @@ class PS_AnimeCinematicEntity : CinematicEntity
 		GetGame().GetInputManager().AddActionListener("PS_AnimeNextCharacter", EActionTrigger.DOWN, AnimeNextCharacter);
 		GetGame().GetInputManager().AddActionListener("PS_AnimePrevCharacter", EActionTrigger.DOWN, AnimePrevCharacter);
 		GetGame().GetInputManager().AddActionListener("PS_AnimeForceKnock", EActionTrigger.DOWN, AnimeForceKnock);
+		GetGame().GetInputManager().AddActionListener("PS_AnimeNextParazit", EActionTrigger.DOWN, AnimeNextParazit);
+		GetGame().GetInputManager().AddActionListener("PS_AnimePrevParazit", EActionTrigger.DOWN, AnimePrevParazit);
+	}
+	
+	protected void AnimeNextParazit(float value, EActionTrigger trigger)
+	{
+		bool switchToNext = false;
+		PS_MozgovoiParazitComponent lastParazit;
+		for (int i = 0; i < PS_MozgovoiParazitComponent.s_aParazites.Count(); i++)
+		{
+			PS_MozgovoiParazitComponent parazit = PS_MozgovoiParazitComponent.s_aParazites[i];
+			if (parazit)
+			{
+				lastParazit = parazit;
+				if (switchToNext)
+					break;
+				if (parazit.GetOwner() == SCR_PlayerController.GetLocalControlledEntity())
+				{
+					switchToNext = true;
+					continue;
+				}
+			}
+		}
+		if (lastParazit)
+			lastParazit.Parazitize();
+	}
+	
+	protected void AnimePrevParazit(float value, EActionTrigger trigger)
+	{
+		bool switchToNext = false;
+		PS_MozgovoiParazitComponent lastParazit;
+		for (int i = PS_MozgovoiParazitComponent.s_aParazites.Count() - 1; i > 0; i--)
+		{
+			PS_MozgovoiParazitComponent parazit = PS_MozgovoiParazitComponent.s_aParazites[i];
+			if (parazit)
+			{
+				lastParazit = parazit;
+				if (switchToNext)
+					break;
+				if (parazit.GetOwner() == SCR_PlayerController.GetLocalControlledEntity())
+				{
+					switchToNext = true;
+					continue;
+				}
+			}
+		}
+		if (lastParazit)
+			lastParazit.Parazitize();
 	}
 	
 	protected void AnimeForceKnock(float value, EActionTrigger trigger)

@@ -58,7 +58,7 @@ class PS_AnimeStudioPro2024
 	
 	IEntity FindEntitySloted(string name)
 	{
-		string entityName = m_sAnimeEntityName;
+		string entityName = name;
 		if (entityName.Contains("&"))
 		{
 			array<string> parts = {};
@@ -120,19 +120,17 @@ class PS_AnimeStudioPro2024
 		{
 			m_AnimatedEntity.GetWorldTransform(matWorld);
 			animatedEntityParent = null;
+		} 
+		else if (m_bUseRelativeTransform)
+		{
+				animatedEntityParent = null;
+				vector parentMat[4];
+				Math3D.MatrixIdentity4(matWorld);
 		}
 		else
 		{
 			m_AnimatedEntity.GetLocalTransform(matWorld);
 			animatedEntityParent = m_AnimatedEntity.GetParent();
-			if (m_bUseRelativeTransform)
-			{
-				vector parentMat[4];
-				animatedEntityParent.GetWorldTransform(parentMat);
-				Math3D.MatrixGetInverse4(parentMat, parentMat);
-				Math3D.MatrixMultiply3(matWorld, parentMat, matWorld);
-				matWorld[3] = parentMat[3] - matWorld[3];
-			}
 		}
 		
 		if (m_AnimatedEntityParent != animatedEntityParent)
@@ -324,160 +322,6 @@ class PS_AnimeStudioPro2024
 	}
 	
 	//------------------------------------------------------------------------------------------------
-	void CreateTrack_Transform(string trackName)
-	{
-		array<ref ContainerIdPathEntry> pathScene = {new ContainerIdPathEntry("Scene")};
-		m_Api.CreateObjectArrayVariableMember(m_EntitySource, pathScene, "Tracks", "CustomCinematicTrack", 0);
-		array<ref ContainerIdPathEntry> pathTrack = {new ContainerIdPathEntry("Scene"), new ContainerIdPathEntry("Tracks", 0)};
-		m_Api.SetVariableValue(m_EntitySource, pathTrack, "TrackName", trackName);
-		m_Api.SetVariableValue(m_EntitySource, pathTrack, "ClassName", "GeneralCinematicTrack");
-		m_Api.CreateObjectArrayVariableMember(m_EntitySource, pathTrack, "ChildTracks", "FloatCinematicTrack", 0);
-		array<ref ContainerIdPathEntry> pathTrackScale = {new ContainerIdPathEntry("Scene"), new ContainerIdPathEntry("Tracks", 0), new ContainerIdPathEntry("ChildTracks", 0)};
-		m_Api.SetVariableValue(m_EntitySource, pathTrackScale, "TrackName", "m_bScale");
-		m_Api.CreateObjectArrayVariableMember(m_EntitySource, pathTrack, "ChildTracks", "Vector3CinematicTrack", 1);
-		array<ref ContainerIdPathEntry> pathTrackRotate = {new ContainerIdPathEntry("Scene"), new ContainerIdPathEntry("Tracks", 0), new ContainerIdPathEntry("ChildTracks", 1)};
-		m_Api.SetVariableValue(m_EntitySource, pathTrackRotate, "TrackName", "m_YawPitchRoll");
-		m_Api.CreateObjectArrayVariableMember(m_EntitySource, pathTrack, "ChildTracks", "Vector3CinematicTrack", 2);
-		array<ref ContainerIdPathEntry> pathTrackPosition = {new ContainerIdPathEntry("Scene"), new ContainerIdPathEntry("Tracks", 0), new ContainerIdPathEntry("ChildTracks", 2)};
-		m_Api.SetVariableValue(m_EntitySource, pathTrackPosition, "TrackName", "m_Position");
-		m_Api.CreateObjectVariableMember(m_EntitySource, pathTrackRotate, "X", "FloatCinematicTrack");
-		m_Api.CreateObjectVariableMember(m_EntitySource, pathTrackRotate, "Y", "FloatCinematicTrack");
-		m_Api.CreateObjectVariableMember(m_EntitySource, pathTrackRotate, "Z", "FloatCinematicTrack");
-		m_Api.CreateObjectVariableMember(m_EntitySource, pathTrackPosition, "X", "FloatCinematicTrack");
-		m_Api.CreateObjectVariableMember(m_EntitySource, pathTrackPosition, "Y", "FloatCinematicTrack");
-		m_Api.CreateObjectVariableMember(m_EntitySource, pathTrackPosition, "Z", "FloatCinematicTrack");
-	}
-	
-	//------------------------------------------------------------------------------------------------
-	void CreateTrack_Bone(string trackName)
-	{
-		array<ref ContainerIdPathEntry> pathScene = {new ContainerIdPathEntry("Scene")};
-		m_Api.CreateObjectArrayVariableMember(m_EntitySource, pathScene, "Tracks", "CustomCinematicTrack", 0);
-		array<ref ContainerIdPathEntry> pathTrack = {new ContainerIdPathEntry("Scene"), new ContainerIdPathEntry("Tracks", 0)};
-		m_Api.SetVariableValue(m_EntitySource, pathTrack, "TrackName", trackName);
-		m_Api.SetVariableValue(m_EntitySource, pathTrack, "ClassName", "SlotBoneAnimationCinematicTrack");
-		
-		m_Api.CreateObjectArrayVariableMember(m_EntitySource, pathTrack, "ChildTracks", "StringCinematicTrack", 0);
-		array<ref ContainerIdPathEntry> pathTrackSlotName = {new ContainerIdPathEntry("Scene"), new ContainerIdPathEntry("Tracks", 0), new ContainerIdPathEntry("ChildTracks", 0)};
-		m_Api.SetVariableValue(m_EntitySource, pathTrackSlotName, "TrackName", "m_sSlotName");
-		
-		m_Api.CreateObjectArrayVariableMember(m_EntitySource, pathTrack, "ChildTracks", "StringCinematicTrack", 1);
-		array<ref ContainerIdPathEntry> pathTrackBoneName = {new ContainerIdPathEntry("Scene"), new ContainerIdPathEntry("Tracks", 0), new ContainerIdPathEntry("ChildTracks", 0)};
-		m_Api.SetVariableValue(m_EntitySource, pathTrackBoneName, "TrackName", "m_sBoneName");
-		
-		m_Api.CreateObjectArrayVariableMember(m_EntitySource, pathTrack, "ChildTracks", "Vector3CinematicTrack", 2);
-		array<ref ContainerIdPathEntry> pathTrackRotate = {new ContainerIdPathEntry("Scene"), new ContainerIdPathEntry("Tracks", 0), new ContainerIdPathEntry("ChildTracks", 2)};
-		m_Api.SetVariableValue(m_EntitySource, pathTrackRotate, "TrackName", "m_YawPitchRoll");
-		
-		m_Api.CreateObjectArrayVariableMember(m_EntitySource, pathTrack, "ChildTracks", "Vector3CinematicTrack", 3);
-		array<ref ContainerIdPathEntry> pathTrackPosition = {new ContainerIdPathEntry("Scene"), new ContainerIdPathEntry("Tracks", 0), new ContainerIdPathEntry("ChildTracks", 3)};
-		m_Api.SetVariableValue(m_EntitySource, pathTrackPosition, "TrackName", "m_Position");
-		
-		m_Api.CreateObjectVariableMember(m_EntitySource, pathTrackRotate, "X", "FloatCinematicTrack");
-		m_Api.CreateObjectVariableMember(m_EntitySource, pathTrackRotate, "Y", "FloatCinematicTrack");
-		m_Api.CreateObjectVariableMember(m_EntitySource, pathTrackRotate, "Z", "FloatCinematicTrack");
-		m_Api.CreateObjectVariableMember(m_EntitySource, pathTrackPosition, "X", "FloatCinematicTrack");
-		m_Api.CreateObjectVariableMember(m_EntitySource, pathTrackPosition, "Y", "FloatCinematicTrack");
-		m_Api.CreateObjectVariableMember(m_EntitySource, pathTrackPosition, "Z", "FloatCinematicTrack");
-	}
-	
-	//------------------------------------------------------------------------------------------------
-	void UpdateTrack_Transform(string trackName, PS_AnimeContainer_Transform transform)
-	{
-		CreateTrack_Transform(trackName);
-		
-		array<ref ContainerIdPathEntry> pathRotateX = {new ContainerIdPathEntry("Scene"), new ContainerIdPathEntry("Tracks", 0), new ContainerIdPathEntry("ChildTracks", 1), new ContainerIdPathEntry("X")};
-		array<ref ContainerIdPathEntry> pathRotateY = {new ContainerIdPathEntry("Scene"), new ContainerIdPathEntry("Tracks", 0), new ContainerIdPathEntry("ChildTracks", 1), new ContainerIdPathEntry("Y")};
-		array<ref ContainerIdPathEntry> pathRotateZ = {new ContainerIdPathEntry("Scene"), new ContainerIdPathEntry("Tracks", 0), new ContainerIdPathEntry("ChildTracks", 1), new ContainerIdPathEntry("Z")};
-		array<ref ContainerIdPathEntry> pathPositionX = {new ContainerIdPathEntry("Scene"), new ContainerIdPathEntry("Tracks", 0), new ContainerIdPathEntry("ChildTracks", 2), new ContainerIdPathEntry("X")};
-		array<ref ContainerIdPathEntry> pathPositionY = {new ContainerIdPathEntry("Scene"), new ContainerIdPathEntry("Tracks", 0), new ContainerIdPathEntry("ChildTracks", 2), new ContainerIdPathEntry("Y")};
-		array<ref ContainerIdPathEntry> pathPositionZ = {new ContainerIdPathEntry("Scene"), new ContainerIdPathEntry("Tracks", 0), new ContainerIdPathEntry("ChildTracks", 2), new ContainerIdPathEntry("Z")};
-		
-		m_aIdx = {0, 0, 0, 0, 0, 0, 0};
-		m_aIdxFilter = {0, 0, 0, 0, 0, 0, 0};
-		for (int i = 0; i < m_AnimeContainer.m_aTime.Count() - 1; i++)
-		{
-			float angleMinChange = 0.5;
-			float positionMinChange = 0.01;
-			if (CheckInterpolation(m_aIdxFilter[1], i+1, transform.m_aAngles, 0, angleMinChange))
-			{
-				m_aIdxFilter[1] = i;
-				AddKeyFrame(pathRotateX  , 1, transform.m_aAngles[i][0].ToString(), m_AnimeContainer.m_aTime[i], "FloatCinematicKeyframe", IsChangeGrater(transform.m_aAngles[i][0], transform.m_aAngles[i+1][0], 180));
-			}
-			if (CheckInterpolation(m_aIdxFilter[2], i+1, transform.m_aAngles, 1, angleMinChange))
-			{
-				m_aIdxFilter[2] = i;
-				AddKeyFrame(pathRotateY  , 2, transform.m_aAngles[i][1].ToString(), m_AnimeContainer.m_aTime[i], "FloatCinematicKeyframe", IsChangeGrater(transform.m_aAngles[i][1], transform.m_aAngles[i+1][1], 180));
-			}
-			if (CheckInterpolation(m_aIdxFilter[3], i+1, transform.m_aAngles, 2, angleMinChange))
-			{
-				m_aIdxFilter[3] = i;
-				AddKeyFrame(pathRotateZ  , 3, transform.m_aAngles[i][2].ToString(), m_AnimeContainer.m_aTime[i], "FloatCinematicKeyframe", IsChangeGrater(transform.m_aAngles[i][2], transform.m_aAngles[i+1][2], 180));
-			}
-			if (IsChangeGrater(transform.m_aPositions[i-1][0], transform.m_aPositions[i+1][0], 0.0001))
-				AddKeyFrame(pathPositionX, 4, transform.m_aPositions[i][0].ToString(), m_AnimeContainer.m_aTime[i], "FloatCinematicKeyframe");
-			if (IsChangeGrater(transform.m_aPositions[i-1][1], transform.m_aPositions[i+1][1], 0.0001))
-				AddKeyFrame(pathPositionY, 5, transform.m_aPositions[i][1].ToString(), m_AnimeContainer.m_aTime[i], "FloatCinematicKeyframe");
-			if (IsChangeGrater(transform.m_aPositions[i-1][2], transform.m_aPositions[i+1][2], 0.0001))
-				AddKeyFrame(pathPositionZ, 6, transform.m_aPositions[i][2].ToString(), m_AnimeContainer.m_aTime[i], "FloatCinematicKeyframe");
-		}
-	}
-	
-	//------------------------------------------------------------------------------------------------
-	void UpdateTrack_Bone(string trackName, PS_AnimeContainer_Transform transform, string boneName)
-	{
-		CreateTrack_Bone(trackName);
-		
-		array<ref ContainerIdPathEntry> pathSlotName = {new ContainerIdPathEntry("Scene"), new ContainerIdPathEntry("Tracks", 0), new ContainerIdPathEntry("ChildTracks", 0)};
-		array<ref ContainerIdPathEntry> pathRotateX = {new ContainerIdPathEntry("Scene"), new ContainerIdPathEntry("Tracks", 0), new ContainerIdPathEntry("ChildTracks", 2), new ContainerIdPathEntry("X")};
-		array<ref ContainerIdPathEntry> pathRotateY = {new ContainerIdPathEntry("Scene"), new ContainerIdPathEntry("Tracks", 0), new ContainerIdPathEntry("ChildTracks", 2), new ContainerIdPathEntry("Y")};
-		array<ref ContainerIdPathEntry> pathRotateZ = {new ContainerIdPathEntry("Scene"), new ContainerIdPathEntry("Tracks", 0), new ContainerIdPathEntry("ChildTracks", 2), new ContainerIdPathEntry("Z")};
-		array<ref ContainerIdPathEntry> pathPositionX = {new ContainerIdPathEntry("Scene"), new ContainerIdPathEntry("Tracks", 0), new ContainerIdPathEntry("ChildTracks", 3), new ContainerIdPathEntry("X")};
-		array<ref ContainerIdPathEntry> pathPositionY = {new ContainerIdPathEntry("Scene"), new ContainerIdPathEntry("Tracks", 0), new ContainerIdPathEntry("ChildTracks", 3), new ContainerIdPathEntry("Y")};
-		array<ref ContainerIdPathEntry> pathPositionZ = {new ContainerIdPathEntry("Scene"), new ContainerIdPathEntry("Tracks", 0), new ContainerIdPathEntry("ChildTracks", 3), new ContainerIdPathEntry("Z")};
-		
-		m_aIdx = {0, 0, 0, 0, 0, 0, 0};
-		m_aIdxFilter = {0, 0, 0, 0, 0, 0, 0};
-		for (int i = 1; i < m_AnimeContainer.m_aTime.Count() - 1; i++)
-		{
-			float angleMinChange = 0.5;
-			float positionMinChange = 0.01;
-			if (i == 1)
-				AddKeyFrame(pathSlotName, 0, boneName, m_AnimeContainer.m_aTime[i], "StringCinematicKeyframe");
-			if (CheckInterpolation(m_aIdxFilter[1], i+1, transform.m_aAngles, 0, angleMinChange))
-			{
-				m_aIdxFilter[1] = i;
-				AddKeyFrame(pathRotateX  , 1, (transform.m_aAngles[i][0] * Math.DEG2RAD).ToString(), m_AnimeContainer.m_aTime[i], "FloatCinematicKeyframe", IsChangeGrater(transform.m_aAngles[i][0], transform.m_aAngles[i+1][0], 180));
-			}
-			if (CheckInterpolation(m_aIdxFilter[2], i+1, transform.m_aAngles, 1, angleMinChange))
-			{
-				m_aIdxFilter[2] = i;
-				AddKeyFrame(pathRotateY  , 2, (transform.m_aAngles[i][1] * Math.DEG2RAD).ToString(), m_AnimeContainer.m_aTime[i], "FloatCinematicKeyframe", IsChangeGrater(transform.m_aAngles[i][1], transform.m_aAngles[i+1][1], 180));
-			}
-			if (CheckInterpolation(m_aIdxFilter[3], i+1, transform.m_aAngles, 2, angleMinChange))
-			{
-				m_aIdxFilter[3] = i;
-				AddKeyFrame(pathRotateZ  , 3, (transform.m_aAngles[i][2] * Math.DEG2RAD).ToString(), m_AnimeContainer.m_aTime[i], "FloatCinematicKeyframe", IsChangeGrater(transform.m_aAngles[i][2], transform.m_aAngles[i+1][2], 180));
-			}
-			if (CheckInterpolation(m_aIdxFilter[4], i+1, transform.m_aPositions, 0, positionMinChange))
-			{
-				m_aIdxFilter[4] = i;
-				AddKeyFrame(pathPositionX, 4, transform.m_aPositions[i][0].ToString(), m_AnimeContainer.m_aTime[i], "FloatCinematicKeyframe");
-			}
-			if (CheckInterpolation(m_aIdxFilter[5], i+1, transform.m_aPositions, 1, positionMinChange))
-			{
-				m_aIdxFilter[5] = i;
-				AddKeyFrame(pathPositionY, 5, transform.m_aPositions[i][1].ToString(), m_AnimeContainer.m_aTime[i], "FloatCinematicKeyframe");
-			}
-			if (CheckInterpolation(m_aIdxFilter[6], i+1, transform.m_aPositions, 2, positionMinChange))
-			{
-				m_aIdxFilter[6] = i;
-				AddKeyFrame(pathPositionZ, 6, transform.m_aPositions[i][2].ToString(), m_AnimeContainer.m_aTime[i], "FloatCinematicKeyframe");
-			}
-		}
-	}
-	
-	//------------------------------------------------------------------------------------------------
 	void Reset()
 	{
 		m_CinematicEntity = null;
@@ -488,19 +332,6 @@ class PS_AnimeStudioPro2024
 		m_AnimeContainer = null;
 		
 		m_fStartTime = GetGame().GetWorld().GetWorldTime();
-	}
-	
-	//------------------------------------------------------------------------------------------------
-	void UpdateTracks(WorldEditorAPI api, IEntitySource entitySource)
-	{
-		m_Api = api;
-		m_EntitySource = entitySource;
-		
-		RemoveTracks();
-		UpdateTrack_Transform(m_sAnimeEntityName + "_t", m_AnimeContainer.m_Transform);
-		
-		foreach (string boneName : m_Bones.m_aBones)
-			UpdateTrack_Bone(m_sAnimeEntityName + "_b_" + boneName, m_AnimeContainer.m_mBones[boneName].m_Transform, boneName);
 	}
 	
 	//------------------------------------------------------------------------------------------------
@@ -518,6 +349,11 @@ class PS_AnimeStudioPro2024
 		
 		string filePath = m_sAnimeFilePath;
 		filePath.Replace("#", m_iCharacterNum.ToString());
+		if (FileIO.FileExist(filePath))
+		{
+			string backupFile = filePath + ".bac";
+			FileIO.CopyFile(filePath, backupFile);
+		}
 		FileHandle fileHandle = FileIO.OpenFile(filePath, FileMode.WRITE);
 		
 		// Frames
