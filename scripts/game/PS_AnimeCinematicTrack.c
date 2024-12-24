@@ -50,6 +50,23 @@ class PS_AnimeCinematicTrack : CinematicTrackBase
 		s_aTracks.Insert(this);
 	}
 	
+	GenericEntity FindEntitySloted(string name)
+	{
+		string entityName = name;
+		if (entityName.Contains("&"))
+		{
+			array<string> parts = {};
+			entityName.Split("&", parts, false);
+			entityName = parts[0];
+			string slotName = parts[1];
+			IEntity entity = m_GlobalWorld.FindEntityByName(entityName);
+			SlotManagerComponent slotManagerComponent = SlotManagerComponent.Cast(entity.FindComponent(SlotManagerComponent));
+			EntitySlotInfo entitySlotInfo = slotManagerComponent.GetSlotByName(slotName);
+			return GenericEntity.Cast(entitySlotInfo.GetAttachedEntity());
+		}
+		return GenericEntity.Cast(m_GlobalWorld.FindEntityByName(entityName));
+	}
+	
 	override void OnApply(float time)
 	{
 		if (!m_GlobalWorld)
@@ -98,7 +115,9 @@ class PS_AnimeCinematicTrack : CinematicTrackBase
 		if (Replication.IsServer() && !entity)
 		{
 			if (m_sEntityName != "")
-				entity = GenericEntity.Cast(m_GlobalWorld.FindEntityByName(m_sEntityName));
+			{
+				entity = FindEntitySloted(m_sEntityName); // GenericEntity.Cast(m_GlobalWorld.FindEntityByName(m_sEntityName));
+			}
 			else
 				entity = GenericEntity.Cast(SCR_PlayerController.GetLocalControlledEntity());
 			if (!entity)
@@ -183,8 +202,11 @@ class PS_AnimeCinematicTrack : CinematicTrackBase
 			
 			if (m_Entity)
 			{
-				m_Entity.SetWorldTransform(m_vWorldMat);
-				m_Entity.Teleport(m_vWorldMat);
+				if (!m_AnimatedEntityParent) 
+				{
+					m_Entity.SetWorldTransform(m_vWorldMat);
+					m_Entity.Teleport(m_vWorldMat);
+				}
 				m_Entity = null;
 			}
 			
@@ -249,7 +271,7 @@ class PS_AnimeCinematicTrack : CinematicTrackBase
 			vector matParent[4];
 			m_AnimatedEntityParent.GetWorldTransform(matParent);
 			Math3D.MatrixToQuat(matParent, quatParent);
-			if (m_iParentBoneId)
+			if (m_iParentBoneId > 0)
 			{
 				Animation parentAnimation = m_AnimatedEntityParent.GetAnimation();
 				vector boneMat[4];

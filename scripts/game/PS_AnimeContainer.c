@@ -342,6 +342,7 @@ class PS_AnimeContainer_Bone
 	vector m_vDefaultOffset;
 	vector m_vDefaultRotation;
 	ref PS_AnimeContainer_Transform m_Transform = new PS_AnimeContainer_Transform();
+	PS_AnimeContainer_Bone m_ParentBone;
 }
 
 class PS_AnimeContainer_Transform

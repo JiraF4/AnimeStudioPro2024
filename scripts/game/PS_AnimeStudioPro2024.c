@@ -10,9 +10,10 @@ class PS_AnimeStudioPro2024Title: BaseContainerCustomTitle
 class PS_AnimeStudioPro2024
 {
 	
-	[Attribute("$profile:isekai.anime")]
+	[Attribute("")]
+	bool m_bEnabled;
+	[Attribute("$profile:isekai.vcsurf")]
 	string m_sAnimeFilePath;
-	
 	[Attribute("")]
 	string m_sAnimeEntityName;
 	[Attribute("Template")]
@@ -21,6 +22,8 @@ class PS_AnimeStudioPro2024
 	bool m_bUseGlobalMatrix;
 	[Attribute("")]
 	bool m_bUseGlobalTransform;
+	[Attribute("")]
+	bool m_bUseRelativeTransform;
 	[Attribute("")]
 	ref PS_AnimeStudioBoneSet m_Bones;
 	
@@ -45,14 +48,35 @@ class PS_AnimeStudioPro2024
 	
 	void SetNameDelay(int num)
 	{
+		if (!m_bEnabled)
+			return;
 		string name = m_sAnimeFilePath;
 		name.Replace("#", num.ToString());
 		if (PS_AnimeCinematicEntity.s_wAnimeFile)
 			PS_AnimeCinematicEntity.s_wAnimeFile.SetText(name);
 	}
 	
+	IEntity FindEntitySloted(string name)
+	{
+		string entityName = m_sAnimeEntityName;
+		if (entityName.Contains("&"))
+		{
+			array<string> parts = {};
+			entityName.Split("&", parts, false);
+			entityName = parts[0];
+			string slotName = parts[1];
+			IEntity entity = GetGame().GetWorld().FindEntityByName(entityName);
+			SlotManagerComponent slotManagerComponent = SlotManagerComponent.Cast(entity.FindComponent(SlotManagerComponent));
+			EntitySlotInfo entitySlotInfo = slotManagerComponent.GetSlotByName(slotName);
+			return entitySlotInfo.GetAttachedEntity();
+		}
+		return GetGame().GetWorld().FindEntityByName(entityName);
+	}
+	
 	void Update(IEntity owner, float timeSlice) 
 	{
+		if (!m_bEnabled)
+			return;
 		if (!m_CinematicEntity)
 		{
 			string name = owner.GetName();
@@ -76,7 +100,9 @@ class PS_AnimeStudioPro2024
 				m_AnimatedEntity = SCR_PlayerController.GetLocalControlledEntity();
 			}
 			else
-				m_AnimatedEntity = owner.GetWorld().FindEntityByName(m_sAnimeEntityName);
+			{
+				m_AnimatedEntity = FindEntitySloted(m_sAnimeEntityName);
+			}
 			
 			m_AnimatedEntityParent = m_AnimatedEntity;
 		}
@@ -99,6 +125,14 @@ class PS_AnimeStudioPro2024
 		{
 			m_AnimatedEntity.GetLocalTransform(matWorld);
 			animatedEntityParent = m_AnimatedEntity.GetParent();
+			if (m_bUseRelativeTransform)
+			{
+				vector parentMat[4];
+				animatedEntityParent.GetWorldTransform(parentMat);
+				Math3D.MatrixGetInverse4(parentMat, parentMat);
+				Math3D.MatrixMultiply3(matWorld, parentMat, matWorld);
+				matWorld[3] = parentMat[3] - matWorld[3];
+			}
 		}
 		
 		if (m_AnimatedEntityParent != animatedEntityParent)
@@ -140,6 +174,15 @@ class PS_AnimeStudioPro2024
 		Animation animation = m_AnimatedEntity.GetAnimation();
 		foreach (string boneName : m_Bones.m_aBones)
 		{
+			int parentId = -1;
+			if (boneName.Contains("|"))
+			{
+				array<string> parts = {};
+				boneName.Split("|", parts, false);
+				parentId = parts[0].ToInt();
+				boneName = parts[1];
+			}
+			
 			// Create new bone
 			if (!m_AnimeContainer.m_mBones.Contains(boneName))
 			{
@@ -147,12 +190,23 @@ class PS_AnimeStudioPro2024
 				TNodeId boneId = animation.GetBoneIndex(boneName);
 				bone.m_sName = boneName;
 				bone.m_iBoneId = boneId;
+				if (parentId >= 0)
+				{
+					string parentBoneName = m_Bones.m_aBones[parentId];
+					if (parentBoneName.Contains("|"))
+					{
+						array<string> parts = {};
+						parentBoneName.Split("|", parts, false);
+						parentBoneName = parts[1];
+					}
+					bone.m_ParentBone = m_AnimeContainer.m_mBones[parentBoneName];
+				}
 				
-				IEntity Template = owner.GetWorld().FindEntityByName(m_sAnimeEntityTemplateName);
+				IEntity Template = FindEntitySloted(m_sAnimeEntityTemplateName);// owner.GetWorld().FindEntityByName(m_sAnimeEntityTemplateName);
 				Animation animTemplate = Template.GetAnimation();
 				vector matL[4];
 				if (m_bUseGlobalMatrix)
-					animTemplate.GetBoneMatrix(boneId, matL);
+					GetLocalMatrixFromGlobal(animTemplate, matL, bone);
 				else
 					animTemplate.GetBoneLocalMatrix(boneId, matL);
 				if (boneName == "Hips") // Hack
@@ -169,7 +223,7 @@ class PS_AnimeStudioPro2024
 			PS_AnimeContainer_Bone bone = m_AnimeContainer.m_mBones[boneName];
 			vector mat[4];
 			if (m_bUseGlobalMatrix)
-				animation.GetBoneMatrix(bone.m_iBoneId, mat);
+				GetLocalMatrixFromGlobal(animation, mat, bone);
 			else
 				animation.GetBoneLocalMatrix(bone.m_iBoneId, mat);
 			if (boneName == "Hips") // Hack
@@ -221,6 +275,19 @@ class PS_AnimeStudioPro2024
 				m_AnimeContainer.m_aCustomData.Insert(null);
 		} else
 			m_AnimeContainer.m_aCustomData.Insert(null);
+	}
+	
+	//------------------------------------------------------------------------------------------------
+	void GetLocalMatrixFromGlobal(Animation animation, out vector mat[4], PS_AnimeContainer_Bone bone)
+	{
+		animation.GetBoneMatrix(bone.m_iBoneId, mat);
+		if (bone.m_ParentBone)
+		{
+			vector matParent[4];
+			animation.GetBoneMatrix(bone.m_ParentBone.m_iBoneId, matParent);
+			Math3D.MatrixGetInverse4(matParent, matParent);
+			Math3D.MatrixMultiply4(matParent, mat, mat);
+		}
 	}
 	
 	#ifdef WORKBENCH
@@ -439,6 +506,8 @@ class PS_AnimeStudioPro2024
 	//------------------------------------------------------------------------------------------------
 	void UpdateTracksFile(IEntity owner)
 	{
+		if (!m_bEnabled)
+			return;
 		if (!s_mAnimeContainers)
 			return;
 		m_AnimeContainer = s_mAnimeContainers[owner.GetName() + "_" + m_sAnimeEntityName];

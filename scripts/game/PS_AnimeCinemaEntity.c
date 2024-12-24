@@ -109,6 +109,45 @@ class PS_AnimeCinematicEntity : CinematicEntity
 		}
 	}
 	
+	/*
+	actionEquip(SCR_PlayerController.GetLocalMainEntity());
+	void actionEquip(IEntity entity)
+	{
+		if (entity)
+			GetGame().GetWorld().QueryEntitiesBySphere(entity.GetOrigin(), 3, PerformActionEquip);
+	}
+	bool PerformActionEquip(IEntity entity)
+	{
+		if (SCR_PlayerController.GetLocalMainEntity() != entity.GetParent())
+			return true;
+		
+		WeaponComponent weaponComponent = WeaponComponent.Cast(entity.FindComponent(WeaponComponent));
+		if (!weaponComponent)
+			return true;
+		
+		ActionsManagerComponent actionsManager = ActionsManagerComponent.Cast(entity.FindComponent(ActionsManagerComponent));	
+		if (!actionsManager)
+			return true;
+
+		array<BaseUserAction> outActions = {};		
+	   actionsManager.GetActionsList(outActions);
+		
+		UIInfo info = weaponComponent.GetUIInfo();
+		Print("Name: " + info.GetName());
+		
+		foreach (BaseUserAction openAction : outActions)
+		{					
+			Print(openAction.GetActionName());
+			
+			CharacterControllerComponent controller = CharacterControllerComponent.Cast(SCR_PlayerController.GetLocalMainEntity().FindComponent(CharacterControllerComponent));
+			controller.TryEquipRightHandItem(entity, EEquipItemType.EEquipTypeWeapon, false);
+			return false;
+		}
+		
+	   return true;
+	}
+	*/
+	
 	protected void AnimeNextCharacter(float value, EActionTrigger trigger)
 	{
 		foreach (PS_AnimeStudioPro2024 animeStudio : m_aAnimateTrackers)
