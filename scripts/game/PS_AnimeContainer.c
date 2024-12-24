@@ -49,6 +49,7 @@ class PS_AnimeContainer_Character : PS_AnimeContainer_CustomData
 	{
 		SCR_ChimeraCharacter character = SCR_ChimeraCharacter.Cast(entity);
 		CharacterControllerComponent characterControllerComponent = character.GetCharacterController();
+		m_iFireNeed = GetGame().GetInputManager().GetActionValue("CharacterFire") + GetGame().GetInputManager().GetActionValue("TurretFire") + GetGame().GetInputManager().GetActionValue("HelicopterFire");
 		
 		BaseWeaponComponent weaponComponent = characterControllerComponent.GetWeaponManagerComponent().GetCurrent();
 		if (weaponComponent)
@@ -56,8 +57,7 @@ class PS_AnimeContainer_Character : PS_AnimeContainer_CustomData
 			array<BaseMuzzleComponent> outMuzzles = {};
 			weaponComponent.GetMuzzlesList(outMuzzles);
 			m_iMuzzleMode = outMuzzles.Find(weaponComponent.GetCurrentMuzzle());
-			m_iFireMode = weaponComponent.GetCurrentMuzzle().GetFireModeIndex();
-			m_iFireNeed = GetGame().GetInputManager().GetActionValue("CharacterFire");
+			m_iFireMode = weaponComponent.GetCurrentMuzzle().GetFireModeIndex(); 
 			if (weaponComponent.GetCurrentMuzzle() && weaponComponent.GetCurrentMuzzle().GetMagazine())
 				m_AnimeContainer.m_iOldBarrelIndex = weaponComponent.GetCurrentMuzzle().GetMagazine().GetAmmoCount();
 			if (characterControllerComponent.IsReloading())
@@ -79,7 +79,6 @@ class PS_AnimeContainer_Character : PS_AnimeContainer_CustomData
 		{
 			m_iMuzzleMode = 0;
 			m_iFireMode = 0;
-			m_iFireNeed = 0;
 		}
 		
 		EntitySlotInfo leftHandPointInfo = characterControllerComponent.GetLeftHandPointInfo();
@@ -117,6 +116,13 @@ class PS_AnimeContainer_Character : PS_AnimeContainer_CustomData
 			//characterControllerComponent.SetWeaponRaised(1);
 		}
 		characterControllerComponent.SetFireWeaponWanted(m_iFireNeed);
+		
+		Turret turret = Turret.Cast(character.GetParent());
+		if (turret)
+		{
+			TurretControllerComponent turretControllerComponent = TurretControllerComponent.Cast(turret.FindComponent(TurretControllerComponent));
+			turretControllerComponent.SetFireWeaponWanted(m_iFireNeed);
+		}
 		if (m_iNeedReload)
 			characterControllerComponent.ReloadWeapon();
 		BaseWeaponComponent weaponComponent = characterControllerComponent.GetWeaponManagerComponent().GetCurrentWeapon();
@@ -221,6 +227,7 @@ class PS_AnimeContainer_Vehicle : PS_AnimeContainer_CustomData
 		m_fClutch = m_Vehicle_s.GetClutch();
 		m_fThrottle = m_Vehicle_s.GetThrottle();
 		m_fBreak = m_Vehicle_s.GetBrake();
+		m_fSteering = m_Vehicle_s.GetSteering();
 	}
 	
 	override void Apply(IEntity entity)
@@ -260,6 +267,7 @@ class PS_AnimeContainer_Vehicle : PS_AnimeContainer_CustomData
 				 
 			//Break and hand-brake
 		 	m_Vehicle_s.SetBreak(m_fBreak, m_bHandBrake);
+		 	m_Vehicle_s.SetSteering(m_fSteering);
 				
 			//Ggear
 			if(m_Vehicle_s.GetGear() != m_iGear)
@@ -297,6 +305,8 @@ class PS_AnimeContainer_Vehicle : PS_AnimeContainer_CustomData
 			return true;
 		if (dataVehicle.m_fBreak != m_fBreak)
 			return true;
+		if (dataVehicle.m_fSteering != m_fSteering)
+			return true;
 		
 		return false;
 	}
@@ -311,7 +321,7 @@ class PS_AnimeContainer_Vehicle : PS_AnimeContainer_CustomData
 		fileHandle.Write(m_fEfficiency, 4);
 		fileHandle.Write(m_fClutch, 4);
 		fileHandle.Write(m_fThrottle, 4);
-		fileHandle.Write(m_fBreak, 4);
+		fileHandle.Write(m_fSteering, 4);
 	}
 	override void ReadFromFile(FileHandle fileHandle)
 	{
@@ -322,7 +332,7 @@ class PS_AnimeContainer_Vehicle : PS_AnimeContainer_CustomData
 		fileHandle.Read(m_fEfficiency, 4);
 		fileHandle.Read(m_fClutch, 4);
 		fileHandle.Read(m_fThrottle, 4);
-		fileHandle.Read(m_fBreak, 4);
+		fileHandle.Read(m_fSteering, 4);
 	}
 	
 	bool m_bStartEngine;
@@ -333,6 +343,7 @@ class PS_AnimeContainer_Vehicle : PS_AnimeContainer_CustomData
 	float m_fClutch;
 	float m_fThrottle;
 	float m_fBreak;
+	float m_fSteering;
 }
 
 class PS_AnimeContainer_Bone

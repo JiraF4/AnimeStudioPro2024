@@ -16,6 +16,9 @@ class PS_AnimeCinematicTrack : CinematicTrackBase
 	[Attribute("")]
 	bool m_bDie;
 	
+	[Attribute("")]
+	bool m_bOnlyEffects;
+	
 	string m_sEntityName;
 	int m_iCharacterNum;
 	
@@ -36,6 +39,8 @@ class PS_AnimeCinematicTrack : CinematicTrackBase
 	
 	static ref array<PS_AnimeCinematicTrack> s_aTracks;
 	static ref map<string, ref PS_AnimeFrames> s_mFramesCache;
+	
+	ref map<string, ref PS_AnimeFrameTransform> m_mBoneTransforms = new map<string, ref PS_AnimeFrameTransform>();
 	
 	override void OnInit(World world)
 	{
@@ -69,6 +74,9 @@ class PS_AnimeCinematicTrack : CinematicTrackBase
 	
 	override void OnApply(float time)
 	{
+		if (m_bOnlyEffects)
+			m_bOnlyEffects = GetGame().InPlayMode();
+		
 		if (!m_GlobalWorld)
 			m_GlobalWorld = GetGame().GetWorld();
 		
@@ -152,7 +160,7 @@ class PS_AnimeCinematicTrack : CinematicTrackBase
 		if (!entity)
 			return;
 		Physics physics = entity.GetPhysics();
-		if (physics && !m_bDie)
+		if (physics && !m_bDie && !m_bOnlyEffects)
 			physics.SetVelocity("0 0 0");
 		m_Character = SCR_ChimeraCharacter.Cast(entity);
 		if (m_Character)
@@ -217,7 +225,7 @@ class PS_AnimeCinematicTrack : CinematicTrackBase
 		{
 			CharacterAnimationComponent characterAnimationComponent = m_Character.GetAnimationComponent();
 			TAnimGraphVariable disableGraphVariable = characterAnimationComponent.BindVariableBool("DisableGraph");
-			characterAnimationComponent.SetVariableBool(disableGraphVariable, true);
+			characterAnimationComponent.SetVariableBool(disableGraphVariable, !m_bOnlyEffects);
 			if (!GetGame().InPlayMode() && m_iCharacterNum >= 0)
 				entity.SetObject(entity.GetVObject(), "");
 		}
@@ -252,6 +260,12 @@ class PS_AnimeCinematicTrack : CinematicTrackBase
 		
 		if (frameProgress < 0)
 			frameProgress = 0;
+		
+		
+		if (frame.m_CustomData)
+			frame.m_CustomData.Apply(entity);
+		if (m_bOnlyEffects)
+			return;
 		
 		// Set transform
 		float quat1[4];
@@ -296,15 +310,39 @@ class PS_AnimeCinematicTrack : CinematicTrackBase
 			vector angles = Math3D.QuatToAngles(quat1);
 			vector position = vector.Lerp(transform.m_vPosition, transformNext.m_vPosition, frameProgress);
 			
+			vector newMat[4];
+			Math3D.AnglesToMatrix(angles, newMat);
+			newMat[3] = position;
+			
 			int boneId = animation.GetBoneIndex(boneName);
-			animation.SetBone(entity, boneId, angles * Math.DEG2RAD, position, 1.0);
+			
+			/*
+			PS_AnimeFrameTransform initTransform
+			if (!m_mBoneTransforms.Contains(boneName))
+			{
+				initTransform = new PS_AnimeFrameTransform();
+				animation.GetBoneLocalMatrix(boneId, initTransform.m_aMat);
+				Math3D.MatrixGetInverse4(initTransform.m_aMat, initTransform.m_aMat);
+				m_mBoneTransforms[boneName] = initTransform;
+			}
+			else
+				initTransform = m_mBoneTransforms[boneName];
+			
+			
+			if (initTransform.m_aMat[0] != Vector(0, 0, 0))
+			{
+				Math3D.MatrixMultiply4(newMat, initTransform.m_aMat, newMat);
+			}
+			*/
+			
+			
+			
+			//animation.SetBone(entity, boneId, angles * Math.DEG2RAD, position, 1.0);
+			animation.SetBoneMatrix(entity, boneId, newMat);
 		}
 		
 		m_Entity = BaseGameEntity.Cast(entity);
 		entity.GetWorldTransform(m_vWorldMat);
-		
-		if (frame.m_CustomData)
-			frame.m_CustomData.Apply(entity);
 		
 		entity.Update();
 	}

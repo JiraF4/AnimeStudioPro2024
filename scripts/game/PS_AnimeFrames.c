@@ -290,4 +290,6 @@ class PS_AnimeFrameTransform
 {
 	vector m_vPosition;
 	vector m_vAngles;
+	
+	//vector m_aMat[4];
 }
