@@ -12,6 +12,7 @@ class PS_AnimeCinematicEntity : CinematicEntity
 	static TextWidget s_wAnimePlay;
 	static TextWidget s_wAnimeRecord;
 	static TextWidget s_wAnimeFrame;
+	static TextWidget s_wAnimeFramePlay;
 	
 	[Attribute()]
 	ref array<ref PS_AnimeStudioPro2024> m_aAnimateTrackers;
@@ -26,6 +27,9 @@ class PS_AnimeCinematicEntity : CinematicEntity
 	
 	float m_fRecordTime;
 	float m_fRecordTimeStart;
+	
+	float m_fPlayTime;
+	float m_fPlayTimeStart;
 	
 	ref array<PS_AnimeCinematicEntity> m_aAnimeEntities;
 	static int s_iCharacterNum = 0;
@@ -45,6 +49,7 @@ class PS_AnimeCinematicEntity : CinematicEntity
 			s_wAnimePlay = TextWidget.Cast(s_wAnimeEditorMenu.FindAnyWidget("AnimePlay"));
 			s_wAnimeRecord = TextWidget.Cast(s_wAnimeEditorMenu.FindAnyWidget("AnimeRecord"));
 			s_wAnimeFrame = TextWidget.Cast(s_wAnimeEditorMenu.FindAnyWidget("AnimeFrame"));
+			s_wAnimeFramePlay = TextWidget.Cast(s_wAnimeEditorMenu.FindAnyWidget("AnimeFramePlay"));
 		}
 		
 		if (!m_aAnimeEntities)
@@ -159,6 +164,9 @@ class PS_AnimeCinematicEntity : CinematicEntity
 	
 	protected void AnimeStart(float value, EActionTrigger trigger)
 	{
+		m_fPlayTimeStart = 0;
+		m_fPlayTime = 0;
+		
 		s_wAnimePlay.SetText("");
 		Stop();
 		
@@ -231,6 +239,21 @@ class PS_AnimeCinematicEntity : CinematicEntity
 	{
 		if (!m_bShowMenu)
 			return;
+		
+		
+		if (IsPlaying())
+		{
+			if (m_fPlayTimeStart == 0)
+				m_fPlayTimeStart = GetGame().GetWorld().GetWorldTime();
+			m_fPlayTime = GetGame().GetWorld().GetWorldTime() - m_fPlayTimeStart;
+		}
+		else 
+		{
+			 m_fPlayTimeStart = 0;
+			 m_fPlayTime = 0;
+		}
+		if (s_wAnimeFramePlay)
+			s_wAnimeFramePlay.SetText("F: " + ((int)(m_fPlayTime*60/1000)).ToString());
 		
 		
 		GetGame().GetInputManager().ActivateContext("PS_AnimeStudioContext");

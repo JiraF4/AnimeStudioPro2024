@@ -50,7 +50,7 @@ FrameWidgetClass {
    Color 0.502 0 0 1
    Text ""
   }
-  TextWidgetClass "{6330DE22AD9FA98C}" {
+  TextWidgetClass "{63313D05D8AFEC68}" {
    Name "AnimeFrame"
    Slot FrameWidgetSlot "{6323016C365686B7}" {
     PositionX 0
@@ -64,6 +64,22 @@ FrameWidgetClass {
    }
    "Z Order" 1000
    Color 0.502 0 0 1
+   Text ""
+  }
+  TextWidgetClass "{6330DE22AD9FA98C}" {
+   Name "AnimeFramePlay"
+   Slot FrameWidgetSlot "{6323016C365686B7}" {
+    PositionX 0
+    OffsetLeft 0
+    PositionY 124
+    OffsetTop 124
+    SizeX 607
+    OffsetRight -607
+    SizeY 31
+    OffsetBottom -155
+   }
+   "Z Order" 1000
+   Color 0.251 0.502 0 1
    Text ""
   }
  }
