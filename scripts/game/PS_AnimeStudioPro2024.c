@@ -39,11 +39,10 @@ class PS_AnimeStudioPro2024
 	ref map<string, vector> m_mDefaultBoneAngles = new map<string, vector>();
 	
 	float m_fStartTime = 0;
-	int m_iCharacterNum = 0;
 	
 	void PS_AnimeStudioPro2024()
 	{
-		GetGame().GetCallqueue().Call(SetNameDelay, 0);
+		GetGame().GetCallqueue().Call(SetNameDelay, PS_AnimeCinematicEntity.s_iCharacterNum);
 	}
 	
 	void SetNameDelay(int num)
@@ -348,7 +347,7 @@ class PS_AnimeStudioPro2024
 			return;
 		
 		string filePath = m_sAnimeFilePath;
-		filePath.Replace("#", m_iCharacterNum.ToString());
+		filePath.Replace("#", PS_AnimeCinematicEntity.s_iCharacterNum.ToString());
 		if (FileIO.FileExist(filePath))
 		{
 			string backupFile = filePath + ".bac";

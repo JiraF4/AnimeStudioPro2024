@@ -28,6 +28,7 @@ class PS_AnimeCinematicEntity : CinematicEntity
 	float m_fRecordTimeStart;
 	
 	ref array<PS_AnimeCinematicEntity> m_aAnimeEntities;
+	static int s_iCharacterNum = 0;
 	
 	//------------------------------------------------------------------------------------------------
 	void PS_AnimeCinematicEntity(IEntitySource src, IEntity parent)
@@ -204,21 +205,19 @@ class PS_AnimeCinematicEntity : CinematicEntity
 	
 	protected void AnimeNextCharacter(float value, EActionTrigger trigger)
 	{
+		s_iCharacterNum++;
 		foreach (PS_AnimeStudioPro2024 animeStudio : m_aAnimateTrackers)
 		{
-			animeStudio.m_iCharacterNum++;
-			animeStudio.SetNameDelay(animeStudio.m_iCharacterNum);
-			Print(animeStudio.m_iCharacterNum);
+			animeStudio.SetNameDelay(s_iCharacterNum);
 		}
 	}
 	
 	protected void AnimePrevCharacter(float value, EActionTrigger trigger)
 	{
+		s_iCharacterNum--;
 		foreach (PS_AnimeStudioPro2024 animeStudio : m_aAnimateTrackers)
 		{
-			animeStudio.m_iCharacterNum--;
-			animeStudio.SetNameDelay(animeStudio.m_iCharacterNum);
-			Print(animeStudio.m_iCharacterNum);
+			animeStudio.SetNameDelay(s_iCharacterNum);
 		}
 	}
 	
