@@ -77,7 +77,19 @@ class PS_AnimeContainer_Character : PS_AnimeContainer_CustomData
 		}
 		else
 		{
-			m_iMuzzleMode = 0;
+			Turret turret = Turret.Cast(character.GetParent());
+			if (turret)
+			{
+				TurretControllerComponent turretControllerComponent = TurretControllerComponent.Cast(turret.FindComponent(TurretControllerComponent));
+				BaseWeaponManagerComponent turretWeaponManagerComponent = turretControllerComponent.GetWeaponManager();
+				WeaponSlotComponent weapon = WeaponSlotComponent.Cast(turretWeaponManagerComponent.GetCurrent());
+				
+				m_iMuzzleMode = weapon.GetWeaponSlotIndex();
+			}
+			else 
+			{
+				m_iMuzzleMode = 0;
+			}
 			m_iFireMode = 0;
 		}
 		
@@ -122,6 +134,12 @@ class PS_AnimeContainer_Character : PS_AnimeContainer_CustomData
 		{
 			TurretControllerComponent turretControllerComponent = TurretControllerComponent.Cast(turret.FindComponent(TurretControllerComponent));
 			turretControllerComponent.SetFireWeaponWanted(m_iFireNeed);
+			
+			BaseWeaponManagerComponent turretWeaponManagerComponent = turretControllerComponent.GetWeaponManager();
+			array<WeaponSlotComponent> outSlots = {};
+			turretWeaponManagerComponent.GetWeaponsSlots(outSlots);
+			WeaponSlotComponent weaponSlotComponent = outSlots[m_iMuzzleMode];
+			turretWeaponManagerComponent.SelectWeapon(weaponSlotComponent);
 		}
 		if (m_iNeedReload)
 			characterControllerComponent.ReloadWeapon();
