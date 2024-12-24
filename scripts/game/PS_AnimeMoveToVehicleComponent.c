@@ -1,12 +1,12 @@
 [ComponentEditorProps(category: "GameScripted/Misc", description: "")]
-class PS_MoveToVehicleComponentClass : ScriptComponentClass
+class PS_AnimeMoveToVehicleComponentClass : ScriptComponentClass
 {
 }
 
-class PS_MoveToVehicleComponent : ScriptComponent
+class PS_AnimeMoveToVehicleComponent : ScriptComponent
 {
 	[Attribute("")]
-	ref PS_MoveToVehicle m_SpawnVehicle;
+	ref PS_AnimeMoveToVehicle m_SpawnVehicle;
 	
 	//------------------------------------------------------------------------------------------------
 	override void EOnInit(IEntity owner)
@@ -26,7 +26,7 @@ class PS_MoveToVehicleComponent : ScriptComponent
 				{
 					SCR_ChimeraCharacter character = SCR_ChimeraCharacter.Cast(owner);
 					CompartmentAccessComponent compartmentAccessComponent = character.GetCompartmentAccessComponent();
-					GetGame().GetCallqueue().Call(PS_MoveToVehicle, vehicle, m_SpawnVehicle, compartmentAccessComponent);
+					GetGame().GetCallqueue().Call(PS_AnimeMoveToVehicle, vehicle, m_SpawnVehicle, compartmentAccessComponent);
 				}
 			}
 		}
@@ -51,7 +51,7 @@ class PS_MoveToVehicleComponent : ScriptComponent
 	}
 	
 	//------------------------------------------------------------------------------------------------
-	void PS_MoveToVehicle(GenericEntity vehicle, PS_MoveToVehicle moveToVehicle, CompartmentAccessComponent compartmentAccessComponent)
+	void PS_AnimeMoveToVehicle(GenericEntity vehicle, PS_AnimeMoveToVehicle moveToVehicle, CompartmentAccessComponent compartmentAccessComponent)
 	{
 		BaseCompartmentManagerComponent compartmentManagerComponent = BaseCompartmentManagerComponent.Cast(vehicle.FindComponent(BaseCompartmentManagerComponent));
 		array<BaseCompartmentSlot> outCompartments = {};
@@ -65,3 +65,12 @@ class PS_MoveToVehicleComponent : ScriptComponent
 		SetEventMask(owner, EntityEvent.INIT | EntityEvent.FRAME);
 	}
 }
+[BaseContainerProps()]
+class PS_AnimeMoveToVehicle
+{
+	[Attribute()]
+	string m_sVehicleName;
+	[Attribute()]
+	int m_iCompartmentIndex;
+}
+
