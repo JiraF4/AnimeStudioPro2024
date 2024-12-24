@@ -5,12 +5,13 @@ FrameWidgetClass {
   TextWidgetClass "{6323016C365686A1}" {
    Name "AnimeFile"
    Slot FrameWidgetSlot "{6323016C365686B7}" {
+    Anchor 0 0 1 0
     PositionX 0
     OffsetLeft 0
     PositionY 0
     OffsetTop 0
-    SizeX 607
-    OffsetRight -607
+    SizeX -1
+    OffsetRight 0
     SizeY 31
     OffsetBottom -31
    }
@@ -44,6 +45,22 @@ FrameWidgetClass {
     OffsetRight -607
     SizeY 31
     OffsetBottom -93
+   }
+   "Z Order" 1000
+   Color 0.502 0 0 1
+   Text ""
+  }
+  TextWidgetClass "{6330DE22AD9FA98C}" {
+   Name "AnimeFrame"
+   Slot FrameWidgetSlot "{6323016C365686B7}" {
+    PositionX 0
+    OffsetLeft 0
+    PositionY 93
+    OffsetTop 93
+    SizeX 607
+    OffsetRight -607
+    SizeY 31
+    OffsetBottom -124
    }
    "Z Order" 1000
    Color 0.502 0 0 1

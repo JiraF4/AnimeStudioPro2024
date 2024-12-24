@@ -11,6 +11,7 @@ class PS_AnimeCinematicEntity : CinematicEntity
 	static TextWidget s_wAnimeFile;
 	static TextWidget s_wAnimePlay;
 	static TextWidget s_wAnimeRecord;
+	static TextWidget s_wAnimeFrame;
 	
 	[Attribute()]
 	ref array<ref PS_AnimeStudioPro2024> m_aAnimateTrackers;
@@ -22,6 +23,9 @@ class PS_AnimeCinematicEntity : CinematicEntity
 	bool m_bShowMenu;
 	
 	bool m_bRecord;
+	
+	float m_fRecordTime;
+	float m_fRecordTimeStart;
 	
 	ref array<PS_AnimeCinematicEntity> m_aAnimeEntities;
 	
@@ -39,6 +43,7 @@ class PS_AnimeCinematicEntity : CinematicEntity
 			s_wAnimeFile = TextWidget.Cast(s_wAnimeEditorMenu.FindAnyWidget("AnimeFile"));
 			s_wAnimePlay = TextWidget.Cast(s_wAnimeEditorMenu.FindAnyWidget("AnimePlay"));
 			s_wAnimeRecord = TextWidget.Cast(s_wAnimeEditorMenu.FindAnyWidget("AnimeRecord"));
+			s_wAnimeFrame = TextWidget.Cast(s_wAnimeEditorMenu.FindAnyWidget("AnimeFrame"));
 		}
 		
 		if (!m_aAnimeEntities)
@@ -111,7 +116,6 @@ class PS_AnimeCinematicEntity : CinematicEntity
 		SCR_ChimeraCharacter character = SCR_ChimeraCharacter.Cast(entity);
 		if (!character)
 			return;
-		
 		CharacterControllerComponent characterControllerComponent = character.GetCharacterController();
 		characterControllerComponent.SetUnconscious(!characterControllerComponent.IsUnconscious());
 		//characterControllerComponent.ForceDeath();
@@ -120,6 +124,8 @@ class PS_AnimeCinematicEntity : CinematicEntity
 	protected void AnimeSave(float value, EActionTrigger trigger)
 	{
 		#ifdef WORKBENCH
+		m_fRecordTimeStart = GetGame().GetWorld().GetWorldTime();
+		m_fRecordTime = 0;
 		if (!m_bRecord)
 		{
 			s_wAnimeRecord.SetText("Record");
@@ -221,10 +227,16 @@ class PS_AnimeCinematicEntity : CinematicEntity
 		if (!m_bShowMenu)
 			return;
 		
+		
 		GetGame().GetInputManager().ActivateContext("PS_AnimeStudioContext");
 		if (m_bRecord)
+		{
 			foreach (PS_AnimeStudioPro2024 animeStudio : m_aAnimateTrackers)
 				animeStudio.Update(owner, timeSlice);
+			
+			m_fRecordTime = GetGame().GetWorld().GetWorldTime() - m_fRecordTimeStart;
+			s_wAnimeFrame.SetText("F: " + (int)(m_fRecordTime / 16.6666));
+		}
 	}
 	
 	#ifdef WORKBENCH
