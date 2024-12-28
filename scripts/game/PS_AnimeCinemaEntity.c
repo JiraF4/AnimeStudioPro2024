@@ -23,6 +23,9 @@ class PS_AnimeCinematicEntity : CinematicEntity
 	[Attribute()]
 	bool m_bShowMenu;
 	
+	[Attribute()]
+	bool m_bForceResetCache;
+	
 	bool m_bRecord;
 	
 	float m_fRecordTime;
@@ -169,6 +172,9 @@ class PS_AnimeCinematicEntity : CinematicEntity
 		
 		s_wAnimePlay.SetText("");
 		Stop();
+		
+		if (!m_bForceResetCache)
+			return;
 		
 		PS_AnimeCinematicTrack.s_mFramesCache = new map<string, ref PS_AnimeFrames>();
 		foreach (PS_AnimeCinematicTrack track : PS_AnimeCinematicTrack.s_aTracks)
