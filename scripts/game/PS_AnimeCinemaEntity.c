@@ -119,10 +119,6 @@ class PS_AnimeCinematicEntity : CinematicEntity
 	protected void AnimeForceKnock(float value, EActionTrigger trigger)
 	{
 		
-		AnimationPlayerComponent animationPlayerComponent = AnimationPlayerComponent.Cast(SCR_PlayerController.GetLocalControlledEntity().FindComponent(AnimationPlayerComponent));
-		animationPlayerComponent.Play();
-		
-		return;
 		
 		IEntity entity = SCR_PlayerController.GetLocalControlledEntity();
 		SCR_ChimeraCharacter character = SCR_ChimeraCharacter.Cast(entity);
