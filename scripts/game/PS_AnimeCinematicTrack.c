@@ -160,8 +160,8 @@ class PS_AnimeCinematicTrack : CinematicTrackBase
 		if (!entity)
 			return;
 		Physics physics = entity.GetPhysics();
-		if (physics && !m_bDie && !m_bOnlyEffects)
-			physics.SetVelocity("0 0 0");
+		//if (physics && !m_bDie && !m_bOnlyEffects)
+		//	physics.SetVelocity("0 0 0");
 		m_Character = SCR_ChimeraCharacter.Cast(entity);
 		if (m_Character)
 			m_CharacterControllerComponent = m_Character.GetCharacterController();
