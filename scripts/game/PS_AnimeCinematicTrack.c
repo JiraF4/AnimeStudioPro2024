@@ -293,10 +293,10 @@ class PS_AnimeCinematicTrack : CinematicTrackBase
 				Math3D.MatrixMultiply3(matParent, boneMat, matParent);
 				matParent[3] = matParent[3] + SCR_Math3D.QuatMultiply(quatParent, boneMat[3]);
 			}
-			Math3D.MatrixMultiply3(mat, matParent, mat);
-			mat[3] = matParent[3] + SCR_Math3D.QuatMultiply(quatParent, mat[3]);
+			Math3D.MatrixMultiply4(matParent, mat, mat);
+			//mat[3] = matParent[3] + SCR_Math3D.QuatMultiply(quatParent, mat[3]);
 		}
-		entity.SetLocalTransform(mat);
+		entity.SetTransform(mat);
 		
 		// Set bones
 		Animation animation = entity.GetAnimation();
