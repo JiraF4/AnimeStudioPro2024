@@ -285,7 +285,7 @@ class PS_AnimeCinematicTrack : CinematicTrackBase
 			vector matParent[4];
 			m_AnimatedEntityParent.GetWorldTransform(matParent);
 			Math3D.MatrixToQuat(matParent, quatParent);
-			if (m_iParentBoneId > 0)
+			if (m_iParentBoneId != -1)
 			{
 				Animation parentAnimation = m_AnimatedEntityParent.GetAnimation();
 				vector boneMat[4];
