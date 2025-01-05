@@ -228,34 +228,35 @@ class PS_AnimeContainer_Vehicle : PS_AnimeContainer_CustomData
 	private CarControllerComponent m_Vehicle_c;
 	private VehicleWheeledSimulation m_Vehicle_s;
 	private BaseLightManagerComponent m_Vehicle_l;
+	
+	private VehicleHelicopterSimulation m_Helicopter_s;
+	private HelicopterControllerComponent m_Helicopter_c;
+	
 	override void ReadData(IEntity entity)
 	{
-		if (!m_Vehicle_c)
-		{
-			m_Vehicle_c = CarControllerComponent.Cast(entity.FindComponent(CarControllerComponent));
-			m_Vehicle_l = BaseLightManagerComponent.Cast(entity.FindComponent(BaseLightManagerComponent));
-			m_Vehicle_s = VehicleWheeledSimulation.Cast(entity.FindComponent(VehicleWheeledSimulation));
-		}
+		FindComponents(entity);
 		
-		m_bStartEngine = m_Vehicle_c.IsEngineOn();
-		m_bHandBrake = m_Vehicle_c.GetHandBrake();
-		m_bLightsOn = m_Vehicle_l.GetLightsEnabled();
-		m_iGear = m_Vehicle_c.GetCurrentGear();
-		m_fEfficiency = m_Vehicle_s.GearboxGetEfficiencyState();
-		m_fClutch = m_Vehicle_s.GetClutch();
-		m_fThrottle = m_Vehicle_s.GetThrottle();
-		m_fBreak = m_Vehicle_s.GetBrake();
-		m_fSteering = m_Vehicle_s.GetSteering();
+		if (m_Vehicle_c && m_Vehicle_s)
+		{
+			m_bStartEngine = m_Vehicle_c.IsEngineOn();
+			m_bHandBrake = m_Vehicle_c.GetHandBrake();
+			m_bLightsOn = m_Vehicle_l.GetLightsEnabled();
+			m_iGear = m_Vehicle_c.GetCurrentGear();
+			m_fEfficiency = m_Vehicle_s.GearboxGetEfficiencyState();
+			m_fClutch = m_Vehicle_s.GetClutch();
+			m_fThrottle = m_Vehicle_s.GetThrottle();
+			m_fBreak = m_Vehicle_s.GetBrake();
+			m_fSteering = m_Vehicle_s.GetSteering();
+		}
+		else if (m_Helicopter_s && m_Helicopter_c)
+		{
+			m_bStartEngine = m_Helicopter_c.IsEngineOn();
+		}
 	}
 	
 	override void Apply(IEntity entity)
 	{
-		if (!m_Vehicle_c)
-		{
-			m_Vehicle_c = CarControllerComponent.Cast(entity.FindComponent(CarControllerComponent));
-			m_Vehicle_l = BaseLightManagerComponent.Cast(entity.FindComponent(BaseLightManagerComponent));
-			m_Vehicle_s = VehicleWheeledSimulation.Cast(entity.FindComponent(VehicleWheeledSimulation));
-		}
+		FindComponents(entity);
 		
 		if (m_Vehicle_c && m_Vehicle_s)
 		{
@@ -300,6 +301,31 @@ class PS_AnimeContainer_Vehicle : PS_AnimeContainer_CustomData
 			//Throttle
 		 	if (m_Vehicle_s.GetThrottle() != m_fThrottle)
 		 		m_Vehicle_s.SetThrottle(m_fThrottle);
+		}
+		else if (m_Helicopter_s && m_Helicopter_c)
+		{
+			//Start or stop engine
+			if (m_bStartEngine && !m_Helicopter_c.IsEngineOn())
+			{			
+				m_Helicopter_c.ForceStartEngine();
+				
+			} else if (!m_bStartEngine && m_Helicopter_c.IsEngineOn())  {
+				
+				m_Helicopter_c.ForceStopEngine();
+			}
+		}
+	}
+	
+	void FindComponents(IEntity entity)
+	{
+		if (!m_Vehicle_c && !m_Helicopter_s)
+		{
+			m_Vehicle_c = CarControllerComponent.Cast(entity.FindComponent(CarControllerComponent));
+			m_Vehicle_l = BaseLightManagerComponent.Cast(entity.FindComponent(BaseLightManagerComponent));
+			m_Vehicle_s = VehicleWheeledSimulation.Cast(entity.FindComponent(VehicleWheeledSimulation));
+			
+			m_Helicopter_s = VehicleHelicopterSimulation.Cast(entity.FindComponent(VehicleHelicopterSimulation));
+			m_Helicopter_c = HelicopterControllerComponent.Cast(entity.FindComponent(HelicopterControllerComponent));
 		}
 	}
 	
