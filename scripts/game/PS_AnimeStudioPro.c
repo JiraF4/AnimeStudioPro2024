@@ -306,7 +306,9 @@ class PS_AnimeStudioPro : ScriptComponent
 	
 	//------------------------------------------------------------------------------------------------
 	bool IsChangeGrater(float a, float b, float change)
+	{
 		return Math.AbsFloat(a - b) > change;
+	}
 	
 	//------------------------------------------------------------------------------------------------
 	void UpdateTracks(WorldEditorAPI api, IEntitySource entitySource)

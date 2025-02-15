@@ -31,9 +31,13 @@ class PS_AnimeContainer_CustomData
 	void ReadData(IEntity entity);
 	void Apply(IEntity entity);
 	bool CheckData(PS_AnimeContainer_CustomData data)
+	{
 		return false;
+	}
 	void WriteToFile(FileHandle fileHandle)
+	{
 		fileHandle.Write(m_iDataType, 1);
+	}
 	void ReadFromFile(FileHandle fileHandle);
 }
 
